@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.io.ByteArrayInputStream;
@@ -29,12 +30,24 @@ public class Main extends Activity {
     //constante pour définir l'id du type image
 
     final static int SELECT_PICTURE = 1;
+    private SeekBar seuilControlR = null;
+    private SeekBar seuilControlG = null;
+    private SeekBar seuilControlB = null;
+    int seuilValueR = 0;
+    int seuilValueG = 0;
+    int seuilValueB = 0;
+    boolean imageRead = true;
+    int[][] pixels;
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+
+        // Bouton de chargement depuis la gallerie
 
         ((Button) findViewById(R.id.btGallery)).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,10 +56,80 @@ public class Main extends Activity {
             }
         });
 
+        // Bouton pour effectuer le seuil
+
         ((Button) findViewById(R.id.btSeuil)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btSeuilClick(v);
+            }
+        });
+
+        // Sliders de contrôle de seuil
+
+        seuilControlR = (SeekBar) findViewById(R.id.seuilBarR);
+        seuilControlG = (SeekBar) findViewById(R.id.seuilBarG);
+        seuilControlB = (SeekBar) findViewById(R.id.seuilBarB);
+
+
+
+        seuilControlR.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                seuilValueR = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                TextView textView = (TextView) findViewById(R.id.seuilText);
+                textView.setTextColor(Color.RED);
+                textView.setText(Integer.toString(seuilValueR));
+            }
+        });
+
+        seuilControlG.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                seuilValueG = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                TextView textView = (TextView) findViewById(R.id.seuilText);
+                textView.setTextColor(Color.GREEN);
+                textView.setText(Integer.toString(seuilValueG));
+            }
+        });
+
+        seuilControlB.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                seuilValueB = progress;
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                TextView textView = (TextView) findViewById(R.id.seuilText);
+                textView.setTextColor(Color.BLUE);
+                textView.setText(Integer.toString(seuilValueB));
             }
         });
     }
@@ -65,43 +148,78 @@ public class Main extends Activity {
 
     public void btSeuilClick(View v) {
 
+        // On sélectionne l'image affichée et on la lit en bitmap.
+
         ImageView iv = (ImageView) findViewById(R.id.imageView1);
+
+        if (iv.getDrawable() == null) {
+            TextView textView = (TextView) findViewById(R.id.seuilText);
+            textView.setTextColor(Color.BLACK);
+            textView.setText("No image.");
+
+            return;
+        }
 
         BitmapDrawable bitmapDrawable = ((BitmapDrawable) iv.getDrawable());
         Bitmap bitmap = bitmapDrawable.getBitmap();
 
-        int[][] pixels = new int[bitmap.getHeight()][bitmap.getWidth()];
+        // Si l'image a déjà été rentrée dans la table pixels, on ne la relit pas.
+
+        if (!imageRead)
+            pixels = new int[bitmap.getHeight()][bitmap.getWidth()];
+
+        // pixels2 est la table de l'image à retourner
+
         int[] pixels2 = new int[bitmap.getHeight()*bitmap.getWidth()];
 
         int red,green,blue,RSeuil,GSeuil,BSeuil;
 
         for (int x=0;x<bitmap.getHeight();x++) {
             for (int y=0;y<bitmap.getWidth();y++) {
-                pixels[x][y] = bitmap.getPixel(x,y);
+
+                // Si l'image a déjà été rentrée dans la table pixels, on ne la relit pas.
+
+                if (!imageRead)
+                    pixels[x][y] = bitmap.getPixel(x,y);
+
+                // On lit les 3 couleurs en [0..255]
+
                 red = Color.red(pixels[x][y]);
                 green = Color.green(pixels[x][y]);
                 blue = Color.blue(pixels[x][y]);
-                if (red < 128) {
+
+                // On applique le seuil.
+
+                if (red < seuilValueR) {
                     RSeuil = 0;
                 }
                 else {
                     RSeuil = 255;
                 }
-                if (green < 128) {
+
+                if (green < seuilValueG) {
                     GSeuil = 0;
                 }
                 else {
                     GSeuil = 255;
                 }
-                if (blue < 128) {
+
+                if (blue < seuilValueB) {
                     BSeuil = 0;
                 }
                 else {
                     BSeuil = 255;
                 }
+
                 pixels2[bitmap.getHeight()*y+x] = Color.rgb(RSeuil,GSeuil,BSeuil);
             }
         }
+
+        // Dans tous les cas on considère la table rentrée dans pixels.
+
+        imageRead = true;
+
+        // On remplace l'image affichée par l'image traitée.
 
         Bitmap bitmap2 = Bitmap.createBitmap(pixels2,bitmap.getWidth(),bitmap.getHeight(),bitmap.getConfig());
         iv.setImageBitmap(bitmap2);
@@ -122,7 +240,6 @@ public class Main extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         ImageView mImageView = (ImageView) findViewById(R.id.imageView1);
-        TextView textView = (TextView) findViewById(R.id.tvStatus);
 
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
@@ -133,11 +250,7 @@ public class Main extends Activity {
                     Bitmap bitmap = BitmapFactory.decodeFile(path);
                     //Afficher le Bitmap
                     mImageView.setImageBitmap(bitmap);
-                    //Renseigner les informations status
-                    textView.setText("");
-                    textView.append("Fichier: " + path);
-                    textView.append(System.getProperty("line.separator"));
-                    textView.append("Taille: " + bitmap.getWidth() + "px X " + bitmap.getHeight() + " px");
+                    imageRead = false;
                     break;
             }
         }
