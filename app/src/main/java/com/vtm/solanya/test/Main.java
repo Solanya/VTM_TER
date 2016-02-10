@@ -166,7 +166,7 @@ public class Main extends Activity {
         // Si l'image a déjà été rentrée dans la table pixels, on ne la relit pas.
 
         if (!imageRead)
-            pixels = new int[bitmap.getHeight()][bitmap.getWidth()];
+            pixels = new int[bitmap.getWidth()][bitmap.getHeight()];
 
         // pixels2 est la table de l'image à retourner
 
@@ -174,8 +174,8 @@ public class Main extends Activity {
 
         int red,green,blue,RSeuil,GSeuil,BSeuil;
 
-        for (int x=0;x<bitmap.getHeight();x++) {
-            for (int y=0;y<bitmap.getWidth();y++) {
+        for (int x=0;x<bitmap.getWidth();x++) {
+            for (int y=0; y <bitmap.getHeight();y++) {
 
                 // Si l'image a déjà été rentrée dans la table pixels, on ne la relit pas.
 
@@ -211,7 +211,7 @@ public class Main extends Activity {
                     BSeuil = 255;
                 }
 
-                pixels2[bitmap.getHeight()*y+x] = Color.rgb(RSeuil,GSeuil,BSeuil);
+                pixels2[bitmap.getWidth()*y+x] = Color.rgb(RSeuil,GSeuil,BSeuil);
             }
         }
 
