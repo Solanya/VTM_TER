@@ -1,7 +1,9 @@
 package com.vtm.solanya.test;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -9,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -20,6 +23,9 @@ import android.widget.TextView;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 /**
  * Sélectionner une photo dans la gallerie
@@ -39,12 +45,33 @@ public class Main extends Activity {
     boolean imageRead = true;
     int[][] pixels;
 
+
+    /*public  boolean isStoragePermissionGranted() {
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+            if (ActivityCompat.checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.v("Permission","Permission is granted");
+                return true;
+            } else {
+
+                Log.v("Permission","Permission is revoked");
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("Permission","Permission is granted");
+            return true;
+        }
+
+
+    }*/
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 
 
         // Bouton de chargement depuis la gallerie
@@ -53,6 +80,15 @@ public class Main extends Activity {
             @Override
             public void onClick(View v) {
                 btGalleryClick(v);
+            }
+        });
+
+        // Bouton de sauvegarde de l'image
+
+        ((Button) findViewById(R.id.btSave)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btSaveClick(v);
             }
         });
 
@@ -134,6 +170,7 @@ public class Main extends Activity {
         });
     }
 
+
     /**
      * Evenement du click boutton
      * @param v
@@ -144,6 +181,78 @@ public class Main extends Activity {
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, ""), SELECT_PICTURE);
+    }
+
+    public boolean btSaveClick(View v) {
+        String fullPath = "";
+        OutputStream fOut = null;
+        File file;
+
+        try {
+            fullPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Saved Images";
+
+            File dir = new File(fullPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            file = new File(fullPath, "image.png");
+            file.createNewFile();
+            fOut = new FileOutputStream(file);
+        }
+        catch (Exception e) {
+            fullPath = getFilesDir().getAbsolutePath() + "/Saved Images";
+
+            File dir = new File(fullPath);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            file = new File(fullPath, "image.png");
+            try {
+                file.createNewFile();
+                fOut = new FileOutputStream(file);
+            }
+            catch (Exception e2){
+                Log.e("Save Image", e.getMessage());
+                TextView textView = (TextView) findViewById(R.id.seuilText);
+                textView.setTextColor(Color.BLACK);
+                textView.setText("Error saving.");
+                return false;
+            }
+        }
+
+        try {
+            ImageView iv = (ImageView) findViewById(R.id.imageView1);
+
+            if (iv.getDrawable() == null) {
+                TextView textView = (TextView) findViewById(R.id.seuilText);
+                textView.setTextColor(Color.BLACK);
+                textView.setText("No image.");
+
+                return false;
+            }
+
+            BitmapDrawable bitmapDrawable = ((BitmapDrawable) iv.getDrawable());
+            Bitmap bitmap = bitmapDrawable.getBitmap();
+
+            // 100 means no compression, the lower you go, the stronger the compression
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+            fOut.flush();
+            fOut.close();
+
+            MediaStore.Images.Media.insertImage(this.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
+
+            return true;
+
+
+        } catch (Exception e) {
+            Log.e("Save Image", e.getMessage());
+            TextView textView = (TextView) findViewById(R.id.seuilText);
+            textView.setTextColor(Color.BLACK);
+            textView.setText("Error saving.");
+            return false;
+        }
     }
 
     public void btSeuilClick(View v) {
