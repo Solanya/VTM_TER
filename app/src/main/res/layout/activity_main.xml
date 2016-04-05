@@ -8,32 +8,47 @@
 
     <GridLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="left">
+        android:layout_height="wrap_content">
 
         <Button
-            android:id="@+id/btGallery"
+            android:id="@+id/btLoad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Load Image"
+            android:text="Load"
             android:layout_row="0"
             android:layout_column="0" />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save Image"
-            android:id="@+id/btSave"
+            android:text="Cam"
+            android:id="@+id/btCam"
             android:layout_row="0"
             android:layout_column="1" />
 
         <Button
-            android:id="@+id/btSeuil"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Seuil"
+            android:text="Save"
+            android:id="@+id/btSave"
             android:layout_row="0"
             android:layout_column="2" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose"
+            android:id="@+id/btChoose"
+            android:layout_row="1"
+            android:layout_column="0" />
+
+        <Button
+            android:id="@+id/btApply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Apply"
+            android:layout_row="1"
+            android:layout_column="1" />
 
     </GridLayout>
 
@@ -41,7 +56,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="0"
-        android:id="@+id/seuilText"
+        android:id="@+id/textBox"
         android:layout_row="0"
         android:layout_column="3"
         android:layout_gravity="center_horizontal" />
@@ -49,7 +64,7 @@
     <SeekBar
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/seuilBarR"
+        android:id="@+id/paramBar1"
         android:max="255"
         android:indeterminate="false"
         android:background="#40ff0000" />
@@ -57,14 +72,14 @@
     <SeekBar
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/seuilBarG"
+        android:id="@+id/paramBar2"
         android:max="255"
         android:background="#4000ff00" />
 
     <SeekBar
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/seuilBarB"
+        android:id="@+id/paramBar3"
         android:max="255"
         android:background="#400000ff" />
 
