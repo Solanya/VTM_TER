@@ -23,8 +23,6 @@ import android.widget.TextView;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class Main extends Activity {
     //constante pour définir l'id du type image
@@ -40,7 +38,9 @@ public class Main extends Activity {
     int paramValue3 = 0;
 
     boolean imageRead = true;
-    int[][] pixels;
+    boolean cancelled = false;
+    int[][] pixelsCurrent;
+    int[][] pixelsOld;
 
     CharSequence imageProcess = "Seuil";
     CharSequence processes[] = new CharSequence[] {"Seuil", "Flou" , "Dilatation", "Erosion"};
@@ -185,6 +185,15 @@ public class Main extends Activity {
             @Override
             public void onClick(View v) {
                 btApplyClick(v);
+            }
+        });
+
+        // Bouton pour annuler/refaire le traitement
+
+        ((Button) findViewById(R.id.btCancel)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btCancelClick(v);
             }
         });
 
@@ -356,6 +365,10 @@ public class Main extends Activity {
         else if (imageProcess == "Flou") {
             applyFlou();
         }
+
+        findViewById(R.id.btCancel).setVisibility(View.VISIBLE);
+        ((Button) findViewById(R.id.btCancel)).setText("Annuler");
+        cancelled = false;
     }
 
     public void applySeuil(){
@@ -377,32 +390,34 @@ public class Main extends Activity {
         }
 
         BitmapDrawable bitmapDrawable = ((BitmapDrawable) iv.getDrawable());
-        Bitmap bitmap = bitmapDrawable.getBitmap();
+        Bitmap bitmapCurrent = bitmapDrawable.getBitmap();
 
-        // Si l'image a déjà été rentrée dans la table pixels, on ne la relit pas.
+        // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
 
-        if (!imageRead)
-            pixels = new int[bitmap.getWidth()][bitmap.getHeight()];
+        if (!imageRead) {
+            pixelsCurrent = new int[bitmapCurrent.getWidth()][bitmapCurrent.getHeight()];
+            pixelsOld = new int[bitmapCurrent.getWidth()][bitmapCurrent.getHeight()];
+        }
 
-        // pixels2 est la table de l'image à retourner
+        // pixelsTemp est la table de l'image à retourner
 
-        int[] pixels2 = new int[bitmap.getHeight() * bitmap.getWidth()];
+        int[] pixelsTemp = new int[bitmapCurrent.getHeight() * bitmapCurrent.getWidth()];
 
         int red, green, blue, RSeuil, GSeuil, BSeuil;
 
-        for (int x = 0; x < bitmap.getWidth(); x++) {
-            for (int y = 0; y < bitmap.getHeight(); y++) {
+        for (int x = 0; x < bitmapCurrent.getWidth(); x++) {
+            for (int y = 0; y < bitmapCurrent.getHeight(); y++) {
 
-                // Si l'image a déjà été rentrée dans la table pixels, on ne la relit pas.
+                // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
 
                 if (!imageRead)
-                    pixels[x][y] = bitmap.getPixel(x, y);
+                    pixelsCurrent[x][y] = bitmapCurrent.getPixel(x, y);
 
                 // On lit les 3 couleurs en [0..255]
 
-                red = Color.red(pixels[x][y]);
-                green = Color.green(pixels[x][y]);
-                blue = Color.blue(pixels[x][y]);
+                red = Color.red(pixelsCurrent[x][y]);
+                green = Color.green(pixelsCurrent[x][y]);
+                blue = Color.blue(pixelsCurrent[x][y]);
 
                 // On applique le seuil.
 
@@ -424,18 +439,21 @@ public class Main extends Activity {
                     BSeuil = 255;
                 }
 
-                pixels2[bitmap.getWidth() * y + x] = Color.rgb(RSeuil, GSeuil, BSeuil);
+                pixelsTemp[bitmapCurrent.getWidth() * y + x] = Color.rgb(RSeuil, GSeuil, BSeuil);
+
+                pixelsOld[x][y] = pixelsCurrent[x][y];
+                pixelsCurrent[x][y] = pixelsTemp[bitmapCurrent.getWidth() * y + x];
             }
         }
 
-        // Dans tous les cas on considère la table rentrée dans pixels.
+        // Dans tous les cas on considère la table rentrée dans pixelsCurrent.
 
         imageRead = true;
 
         // On remplace l'image affichée par l'image traitée.
 
-        Bitmap bitmap2 = Bitmap.createBitmap(pixels2, bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
-        iv.setImageBitmap(bitmap2);
+        Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, bitmapCurrent.getWidth(), bitmapCurrent.getHeight(), bitmapCurrent.getConfig());
+        iv.setImageBitmap(bitmapNew);
 
         /*ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
@@ -461,32 +479,34 @@ public class Main extends Activity {
         }
 
         BitmapDrawable bitmapDrawable = ((BitmapDrawable) iv.getDrawable());
-        Bitmap bitmap = bitmapDrawable.getBitmap();
+        Bitmap bitmapCurrent = bitmapDrawable.getBitmap();
 
-        // Si l'image a déjà été rentrée dans la table pixels, on ne la relit pas.
+        // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
 
-        if (!imageRead)
-            pixels = new int[bitmap.getWidth()][bitmap.getHeight()];
+        if (!imageRead) {
+            pixelsCurrent = new int[bitmapCurrent.getWidth()][bitmapCurrent.getHeight()];
+            pixelsOld = new int[bitmapCurrent.getWidth()][bitmapCurrent.getHeight()];
+        }
 
-        // pixels2 est la table de l'image à retourner
+        // pixelsTemp est la table de l'image à retourner
 
-        int[] pixels2 = new int[bitmap.getHeight() * bitmap.getWidth()];
+        int[] pixelsTemp = new int[bitmapCurrent.getHeight() * bitmapCurrent.getWidth()];
 
         int rFlou, gFlou, bFlou;
 
-        for (int x = 0; x < bitmap.getWidth(); x++) {
-            for (int y = 0; y < bitmap.getHeight(); y++) {
+        for (int x = 0; x < bitmapCurrent.getWidth(); x++) {
+            for (int y = 0; y < bitmapCurrent.getHeight(); y++) {
 
-                // Si l'image a déjà été rentrée dans la table pixels, on ne la relit pas.
+                // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
 
                 if (!imageRead)
-                    pixels[x][y] = bitmap.getPixel(x, y);
-                    pixels2[bitmap.getWidth() * y + x] = pixels[x][y];
+                    pixelsCurrent[x][y] = bitmapCurrent.getPixel(x, y);
+                    pixelsTemp[bitmapCurrent.getWidth() * y + x] = pixelsCurrent[x][y];
             }
         }
 
-        for (int x = flouWindow; x < bitmap.getWidth()-flouWindow; x++) {
-            for (int y = flouWindow; y < bitmap.getHeight()-flouWindow; y++) {
+        for (int x = flouWindow; x < bitmapCurrent.getWidth()-flouWindow; x++) {
+            for (int y = flouWindow; y < bitmapCurrent.getHeight()-flouWindow; y++) {
 
                 rFlou = 0;
                 gFlou = 0;
@@ -495,9 +515,9 @@ public class Main extends Activity {
                 // On applique le flou en lisant les couleurs en [0..255]
                 for (int i = -flouWindow; i < flouWindow + 1; i++){
                     for (int j = -flouWindow; j < flouWindow + 1; j++){
-                        rFlou += Color.red(pixels[x+i][y+j]);
-                        gFlou += Color.green(pixels[x+i][y+j]);
-                        bFlou += Color.blue(pixels[x+i][y+j]);
+                        rFlou += Color.red(pixelsCurrent[x+i][y+j]);
+                        gFlou += Color.green(pixelsCurrent[x+i][y+j]);
+                        bFlou += Color.blue(pixelsCurrent[x+i][y+j]);
                     }
                 }
 
@@ -505,23 +525,63 @@ public class Main extends Activity {
                 gFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
                 bFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
 
-                pixels2[bitmap.getWidth() * y + x] = Color.rgb(rFlou, gFlou, bFlou);
+                pixelsTemp[bitmapCurrent.getWidth() * y + x] = Color.rgb(rFlou, gFlou, bFlou);
+
+                pixelsOld[x][y] = pixelsCurrent[x][y];
+                pixelsCurrent[x][y] = pixelsTemp[bitmapCurrent.getWidth() * y + x];
             }
         }
 
-        // Dans tous les cas on considère la table rentrée dans pixels.
+        // Dans tous les cas on considère la table rentrée dans pixelsCurrent.
 
         imageRead = true;
 
         // On remplace l'image affichée par l'image traitée.
 
-        Bitmap bitmap2 = Bitmap.createBitmap(pixels2, bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
-        iv.setImageBitmap(bitmap2);
+        Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, bitmapCurrent.getWidth(), bitmapCurrent.getHeight(), bitmapCurrent.getConfig());
+        iv.setImageBitmap(bitmapNew);
 
         /*ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
         byte[] imageInByte = stream.toByteArray();
         ByteArrayInputStream bis = new ByteArrayInputStream(imageInByte);*/
+    }
+
+    public void btCancelClick(View v) {
+        ImageView iv = (ImageView) findViewById(R.id.imageView1);
+
+        /*if (iv.getDrawable() == null) {
+            TextView textView = (TextView) findViewById(R.id.textBox);
+            textView.setTextColor(Color.BLACK);
+            textView.setText("No image.");
+
+            return;
+        }*/
+
+        int pxlSize = (pixelsCurrent.length) * (pixelsCurrent[0].length);
+        int[] pixelsTemp = new int[pxlSize];
+
+        System.out.println(pixelsCurrent.length);System.out.println(pixelsCurrent[0].length);
+
+        for (int x=0; x<pixelsCurrent.length; x++){
+            for (int y=0; y<pixelsCurrent[0].length; y++){
+                pixelsTemp[pixelsCurrent.length * y + x] = pixelsOld[x][y];
+                pixelsOld[x][y] = pixelsCurrent[x][y];
+                pixelsCurrent[x][y] = pixelsTemp[pixelsCurrent.length * y + x];
+            }
+        }
+
+        if (!cancelled){
+            ((Button) findViewById(R.id.btCancel)).setText("Refaire");
+            cancelled = true;
+        }
+        else {
+            ((Button) findViewById(R.id.btCancel)).setText("Annuler");
+            cancelled = false;
+        }
+
+        Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, pixelsCurrent.length, pixelsCurrent[0].length, ((BitmapDrawable) iv.getDrawable()).getBitmap().getConfig());
+        iv.setImageBitmap(bitmapNew);
     }
 
 
@@ -547,6 +607,8 @@ public class Main extends Activity {
                     //Afficher le Bitmap
                     mImageView.setImageBitmap(bitmap);
                     imageRead = false;
+                    ((Button) findViewById(R.id.btCancel)).setText("Annuler");
+                    ((Button) findViewById(R.id.btCancel)).setVisibility(View.GONE);
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
                     path = getRealPathFromURI(data.getData());
@@ -556,6 +618,8 @@ public class Main extends Activity {
                     //Afficher le Bitmap
                     mImageView.setImageBitmap(bitmap);
                     imageRead = false;
+                    ((Button) findViewById(R.id.btCancel)).setText("Annuler");
+                    ((Button) findViewById(R.id.btCancel)).setVisibility(View.GONE);
                     break;
             }
         }
