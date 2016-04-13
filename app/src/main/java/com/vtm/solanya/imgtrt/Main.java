@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,11 +15,14 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.ViewFlipper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,9 +33,19 @@ public class Main extends Activity {
 
     final static int SELECT_PICTURE = 1;
 
-    private SeekBar paramControl1 = null;
-    private SeekBar paramControl2 = null;
-    private SeekBar paramControl3 = null;
+    private TextView messageBox = null;
+
+    private TableRow paramBarControlRow1 = null;
+    private TableRow paramBarControlRow2 = null;
+    private TableRow paramBarControlRow3 = null;
+
+    private SeekBar paramBarControl1 = null;
+    private SeekBar paramBarControl2 = null;
+    private SeekBar paramBarControl3 = null;
+
+    private TextView paramBarControlText1 = null;
+    private TextView paramBarControlText2 = null;
+    private TextView paramBarControlText3 = null;
 
     int paramValue1 = 0;
     int paramValue2 = 0;
@@ -42,7 +56,9 @@ public class Main extends Activity {
     int[][] pixelsCurrent;
     int[][] pixelsOld;
 
-    CharSequence imageProcess = "Seuil";
+    private int xDelta;
+
+    CharSequence imageProcess = "";
     CharSequence processes[] = new CharSequence[] {"Seuil", "Flou" , "Dilatation", "Erosion"};
     AlertDialog.Builder processChooser;
 
@@ -77,68 +93,108 @@ public class Main extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        paramControl1 = (SeekBar) findViewById(R.id.paramBar1);
-        paramControl2 = (SeekBar) findViewById(R.id.paramBar2);
-        paramControl3 = (SeekBar) findViewById(R.id.paramBar3);
+        messageBox = (TextView) findViewById(R.id.textBox);
+        messageBox.setTextColor(Color.BLACK);
+        messageBox.setText("Bienvenue !");
+
+        paramBarControlRow1 = (TableRow) findViewById(R.id.paramBarRow1);
+        paramBarControlRow2 = (TableRow) findViewById(R.id.paramBarRow2);
+        paramBarControlRow3 = (TableRow) findViewById(R.id.paramBarRow3);
+        paramBarControlRow1.setVisibility(View.GONE);
+        paramBarControlRow2.setVisibility(View.GONE);
+        paramBarControlRow3.setVisibility(View.GONE);
+
+        paramBarControl1 = (SeekBar) findViewById(R.id.paramBar1);
+        paramBarControl2 = (SeekBar) findViewById(R.id.paramBar2);
+        paramBarControl3 = (SeekBar) findViewById(R.id.paramBar3);
+
+        paramBarControlText1 = (TextView) findViewById(R.id.paramBarText1);
+        paramBarControlText2 = (TextView) findViewById(R.id.paramBarText2);
+        paramBarControlText3 = (TextView) findViewById(R.id.paramBarText3);
 
         processChooser = new AlertDialog.Builder(this);
         processChooser.setTitle("Traitements");
         processChooser.setItems(processes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                TextView textView = (TextView) findViewById(R.id.textBox);
-                textView.setTextColor(Color.BLACK);
-                paramValue1 = 0;
-                paramValue2 = 0;
-                paramValue3 = 0;
-
                 if (which == 0) {
+
                     imageProcess = "Seuil";
+                    paramValue1 = 0;
+                    paramValue2 = 0;
+                    paramValue3 = 0;
 
-                    paramControl1.setVisibility(View.VISIBLE);
-                    paramControl1.setProgress(0);
-                    paramControl1.setMax(255);
-                    paramControl1.setBackgroundColor(Color.parseColor("#40ff0000"));
+                    paramBarControlRow1.setVisibility(View.VISIBLE);
+                    paramBarControl1.setProgress(paramValue1);
+                    paramBarControl1.setMax(255);
+                    paramBarControl1.setBackgroundColor(Color.parseColor("#40ff0000"));
+                    paramBarControlText1.setTextColor(Color.RED);
+                    paramBarControlText1.setText(Integer.toString(paramValue1));
 
-                    paramControl2.setVisibility(View.VISIBLE);
-                    paramControl2.setProgress(0);
-                    paramControl2.setMax(255);
-                    paramControl2.setBackgroundColor(Color.parseColor("#4000ff00"));
+                    paramBarControlRow2.setVisibility(View.VISIBLE);
+                    paramBarControl2.setProgress(paramValue2);
+                    paramBarControl2.setMax(255);
+                    paramBarControl2.setBackgroundColor(Color.parseColor("#4000ff00"));
+                    paramBarControlText2.setTextColor(Color.GREEN);
+                    paramBarControlText2.setText(Integer.toString(paramValue2));
 
-                    paramControl3.setVisibility(View.VISIBLE);
-                    paramControl3.setProgress(0);
-                    paramControl3.setMax(255);
-                    paramControl3.setBackgroundColor(Color.parseColor("#400000ff"));
+                    paramBarControlRow3.setVisibility(View.VISIBLE);
+                    paramBarControl3.setProgress(paramValue3);
+                    paramBarControl3.setMax(255);
+                    paramBarControl3.setBackgroundColor(Color.parseColor("#400000ff"));
+                    paramBarControlText3.setTextColor(Color.BLUE);
+                    paramBarControlText3.setText(Integer.toString(paramValue3));
+
                 } else if (which == 1) {
+
                     imageProcess = "Flou";
+                    paramValue1 = 0;
 
-                    paramControl1.setVisibility(View.VISIBLE);
-                    paramControl1.setMax(5);
-                    paramControl1.setProgress(0);
-                    paramControl1.setBackgroundColor(Color.parseColor("#40000000"));
+                    paramBarControlRow1.setVisibility(View.VISIBLE);
+                    paramBarControl1.setProgress(paramValue1);
+                    paramBarControl1.setMax(5);
+                    paramBarControl1.setBackgroundColor(Color.parseColor("#40000000"));
+                    paramBarControlText1.setTextColor(Color.BLACK);
+                    paramBarControlText1.setText(Integer.toString(paramValue1));
 
-                    paramControl2.setVisibility(View.GONE);
+                    paramBarControlRow2.setVisibility(View.GONE);
 
-                    paramControl3.setVisibility(View.GONE);
+                    paramBarControlRow3.setVisibility(View.GONE);
+
                 } else if (which == 2) {
+
                     imageProcess = "Dilatation";
 
-                    paramControl1.setVisibility(View.GONE);
+                    paramBarControlRow1.setVisibility(View.GONE);
 
-                    paramControl2.setVisibility(View.GONE);
+                    paramBarControlRow2.setVisibility(View.GONE);
 
-                    paramControl3.setVisibility(View.GONE);
+                    paramBarControlRow3.setVisibility(View.GONE);
+
                 } else if (which == 3) {
+
                     imageProcess = "Erosion";
 
-                    paramControl1.setVisibility(View.GONE);
+                    paramBarControlRow1.setVisibility(View.GONE);
 
-                    paramControl2.setVisibility(View.GONE);
+                    paramBarControlRow2.setVisibility(View.GONE);
 
-                    paramControl3.setVisibility(View.GONE);
+                    paramBarControlRow3.setVisibility(View.GONE);
+
                 }
 
-                textView.setText("Choix : " + imageProcess);
+                ((Button) findViewById(R.id.btApply)).setVisibility(View.VISIBLE);
+                messageBox.setText("Choix : " + imageProcess);
+            }
+        });
+
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_right);
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).setOnTouchListener(new View.OnTouchListener() {
+            public boolean onTouch(View v, MotionEvent event) {
+                return menuFlip(v, event);
             }
         });
 
@@ -200,7 +256,7 @@ public class Main extends Activity {
         // Sliders de contrôle de seuil
 
 
-        paramControl1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        paramBarControl1.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -214,13 +270,11 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                TextView textView = (TextView) findViewById(R.id.textBox);
-                textView.setTextColor(Color.RED);
-                textView.setText(Integer.toString(paramValue1));
+                paramBarControlText1.setText(Integer.toString(paramValue1));
             }
         });
 
-        paramControl2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        paramBarControl2.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -234,13 +288,11 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                TextView textView = (TextView) findViewById(R.id.textBox);
-                textView.setTextColor(Color.GREEN);
-                textView.setText(Integer.toString(paramValue2));
+                paramBarControlText2.setText(Integer.toString(paramValue2));
             }
         });
 
-        paramControl3.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        paramBarControl3.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -254,13 +306,43 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                TextView textView = (TextView) findViewById(R.id.textBox);
-                textView.setTextColor(Color.BLUE);
-                textView.setText(Integer.toString(paramValue3));
+                paramBarControlText3.setText(Integer.toString(paramValue3));
             }
         });
     }
 
+    public boolean menuFlip(View v, MotionEvent event) {
+        final int X = (int) event.getRawX();
+        switch (event.getAction() & MotionEvent.ACTION_MASK){
+            case MotionEvent.ACTION_DOWN:
+                xDelta = X;
+                break;
+            case MotionEvent.ACTION_UP:
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (((ViewFlipper) findViewById(R.id.menuFlipper)).getDisplayedChild() != 1
+                        & (X-xDelta) < -Resources.getSystem().getDisplayMetrics().widthPixels/3){
+                    ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this,R.anim.slide_in_from_right);
+                    ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
+                    ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
+                    if (imageProcess == ""){
+                        messageBox.setText("Pas de traitement sélectionné.");
+                    }
+                }
+                else if (((ViewFlipper) findViewById(R.id.menuFlipper)).getDisplayedChild() != 0
+                        & (X-xDelta) > Resources.getSystem().getDisplayMetrics().widthPixels/3){
+                    ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this,R.anim.slide_in_from_left);
+                    ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this,R.anim.slide_out_to_right);
+                    ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
+                }
+                break;
+        }
+        return true;
+    }
 
     /**
      * Evenement du click bouton
@@ -310,9 +392,7 @@ public class Main extends Activity {
                 fOut = new FileOutputStream(file);
             } catch (Exception e2) {
                 Log.e("Save Image", e.getMessage());
-                TextView textView = (TextView) findViewById(R.id.textBox);
-                textView.setTextColor(Color.BLACK);
-                textView.setText("Error saving.");
+                messageBox.setText("Error saving.");
                 return false;
             }
         }
@@ -321,9 +401,7 @@ public class Main extends Activity {
             ImageView iv = (ImageView) findViewById(R.id.imageView1);
 
             if (iv.getDrawable() == null) {
-                TextView textView = (TextView) findViewById(R.id.textBox);
-                textView.setTextColor(Color.BLACK);
-                textView.setText("No image.");
+                messageBox.setText("No image.");
 
                 return false;
             }
@@ -338,18 +416,14 @@ public class Main extends Activity {
 
             MediaStore.Images.Media.insertImage(this.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
 
-            TextView textView = (TextView) findViewById(R.id.textBox);
-            textView.setTextColor(Color.BLACK);
-            textView.setText("Image saved.");
+            messageBox.setText("Image saved.");
 
             return true;
 
 
         } catch (Exception e) {
             Log.e("Save Image", e.getMessage());
-            TextView textView = (TextView) findViewById(R.id.textBox);
-            textView.setTextColor(Color.BLACK);
-            textView.setText("Error saving.");
+            messageBox.setText("Error saving.");
             return false;
         }
     }
@@ -359,7 +433,10 @@ public class Main extends Activity {
     }
 
     public void btApplyClick(View v) {
-        if (imageProcess == "Seuil") {
+        if (imageProcess == ""){
+            messageBox.setText("Aucun traitement sélectionné.");
+        }
+        else if (imageProcess == "Seuil") {
             applySeuil();
         }
         else if (imageProcess == "Flou") {
@@ -382,9 +459,7 @@ public class Main extends Activity {
         ImageView iv = (ImageView) findViewById(R.id.imageView1);
 
         if (iv.getDrawable() == null) {
-            TextView textView = (TextView) findViewById(R.id.textBox);
-            textView.setTextColor(Color.BLACK);
-            textView.setText("No image.");
+            messageBox.setText("No image.");
 
             return;
         }
@@ -471,9 +546,7 @@ public class Main extends Activity {
         ImageView iv = (ImageView) findViewById(R.id.imageView1);
 
         if (iv.getDrawable() == null) {
-            TextView textView = (TextView) findViewById(R.id.textBox);
-            textView.setTextColor(Color.BLACK);
-            textView.setText("No image.");
+            messageBox.setText("No image.");
 
             return;
         }
@@ -551,9 +624,7 @@ public class Main extends Activity {
         ImageView iv = (ImageView) findViewById(R.id.imageView1);
 
         /*if (iv.getDrawable() == null) {
-            TextView textView = (TextView) findViewById(R.id.textBox);
-            textView.setTextColor(Color.BLACK);
-            textView.setText("No image.");
+            messageBox.setText("No image.");
 
             return;
         }*/
@@ -624,13 +695,9 @@ public class Main extends Activity {
             }
         }
         else if (resultCode == RESULT_CANCELED) {
-            TextView textView = (TextView) findViewById(R.id.textBox);
-            textView.setTextColor(Color.BLACK);
-            textView.setText("Cancelled.");
+            messageBox.setText("Cancelled.");
         } else {
-            TextView textView = (TextView) findViewById(R.id.textBox);
-            textView.setTextColor(Color.BLACK);
-            textView.setText("Error taking the picture.");
+            messageBox.setText("Error taking the picture.");
         }
 
     }
