@@ -14,11 +14,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -47,16 +51,17 @@ public class Main extends Activity {
     private TextView paramBarControlText2 = null;
     private TextView paramBarControlText3 = null;
 
-    int paramValue1 = 0;
-    int paramValue2 = 0;
-    int paramValue3 = 0;
+    private int paramBarValue1 = 0;
+    private int paramBarValue2 = 0;
+    private int paramBarValue3 = 0;
 
-    boolean imageRead = true;
-    boolean cancelled = false;
-    int[][] pixelsCurrent;
-    int[][] pixelsOld;
+    private boolean imageRead = true;
+    private boolean cancelled = false;
+    private int[][] pixelsCurrent;
+    private int[][] pixelsOld;
 
     private int xDelta;
+    private String m_Text = "";
 
     CharSequence imageProcess = "";
     CharSequence processes[] = new CharSequence[] {"Seuil", "Flou" , "Dilatation", "Erosion"};
@@ -120,42 +125,42 @@ public class Main extends Activity {
                 if (which == 0) {
 
                     imageProcess = "Seuil";
-                    paramValue1 = 0;
-                    paramValue2 = 0;
-                    paramValue3 = 0;
+                    paramBarValue1 = 0;
+                    paramBarValue2 = 0;
+                    paramBarValue3 = 0;
 
                     paramBarControlRow1.setVisibility(View.VISIBLE);
-                    paramBarControl1.setProgress(paramValue1);
+                    paramBarControl1.setProgress(paramBarValue1);
                     paramBarControl1.setMax(255);
                     paramBarControl1.setBackgroundColor(Color.parseColor("#40ff0000"));
                     paramBarControlText1.setTextColor(Color.RED);
-                    paramBarControlText1.setText(Integer.toString(paramValue1));
+                    paramBarControlText1.setText(Integer.toString(paramBarValue1));
 
                     paramBarControlRow2.setVisibility(View.VISIBLE);
-                    paramBarControl2.setProgress(paramValue2);
+                    paramBarControl2.setProgress(paramBarValue2);
                     paramBarControl2.setMax(255);
                     paramBarControl2.setBackgroundColor(Color.parseColor("#4000ff00"));
                     paramBarControlText2.setTextColor(Color.GREEN);
-                    paramBarControlText2.setText(Integer.toString(paramValue2));
+                    paramBarControlText2.setText(Integer.toString(paramBarValue2));
 
                     paramBarControlRow3.setVisibility(View.VISIBLE);
-                    paramBarControl3.setProgress(paramValue3);
+                    paramBarControl3.setProgress(paramBarValue3);
                     paramBarControl3.setMax(255);
                     paramBarControl3.setBackgroundColor(Color.parseColor("#400000ff"));
                     paramBarControlText3.setTextColor(Color.BLUE);
-                    paramBarControlText3.setText(Integer.toString(paramValue3));
+                    paramBarControlText3.setText(Integer.toString(paramBarValue3));
 
                 } else if (which == 1) {
 
                     imageProcess = "Flou";
-                    paramValue1 = 0;
+                    paramBarValue1 = 0;
 
                     paramBarControlRow1.setVisibility(View.VISIBLE);
-                    paramBarControl1.setProgress(paramValue1);
+                    paramBarControl1.setProgress(paramBarValue1);
                     paramBarControl1.setMax(5);
                     paramBarControl1.setBackgroundColor(Color.parseColor("#40000000"));
                     paramBarControlText1.setTextColor(Color.BLACK);
-                    paramBarControlText1.setText(Integer.toString(paramValue1));
+                    paramBarControlText1.setText(Integer.toString(paramBarValue1));
 
                     paramBarControlRow2.setVisibility(View.GONE);
 
@@ -253,6 +258,15 @@ public class Main extends Activity {
             }
         });
 
+        // Réglage direct des paramètres
+
+        ((TextView) findViewById(R.id.paramBarText1)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeParamBar1(v);
+            }
+        });
+
         // Sliders de contrôle de seuil
 
 
@@ -260,7 +274,7 @@ public class Main extends Activity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                paramValue1 = progress;
+                paramBarValue1 = progress;
             }
 
             @Override
@@ -270,7 +284,7 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                paramBarControlText1.setText(Integer.toString(paramValue1));
+                paramBarControlText1.setText(Integer.toString(paramBarValue1));
             }
         });
 
@@ -278,7 +292,7 @@ public class Main extends Activity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                paramValue2 = progress;
+                paramBarValue2 = progress;
             }
 
             @Override
@@ -288,7 +302,7 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                paramBarControlText2.setText(Integer.toString(paramValue2));
+                paramBarControlText2.setText(Integer.toString(paramBarValue2));
             }
         });
 
@@ -296,7 +310,7 @@ public class Main extends Activity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                paramValue3 = progress;
+                paramBarValue3 = progress;
             }
 
             @Override
@@ -306,7 +320,7 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                paramBarControlText3.setText(Integer.toString(paramValue3));
+                paramBarControlText3.setText(Integer.toString(paramBarValue3));
             }
         });
     }
@@ -450,9 +464,9 @@ public class Main extends Activity {
 
     public void applySeuil(){
 
-        int seuilValueR = paramValue1;
-        int seuilValueG = paramValue2;
-        int seuilValueB = paramValue3;
+        int seuilValueR = paramBarValue1;
+        int seuilValueG = paramBarValue2;
+        int seuilValueB = paramBarValue3;
 
         // On sélectionne l'image affichée et on la lit en bitmap.
 
@@ -538,7 +552,7 @@ public class Main extends Activity {
 
     public void applyFlou(){
 
-        int flouWindow = paramValue1;
+        int flouWindow = paramBarValue1;
         System.out.println(flouWindow);
 
         // On sélectionne l'image affichée et on la lit en bitmap.
@@ -653,6 +667,51 @@ public class Main extends Activity {
 
         Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, pixelsCurrent.length, pixelsCurrent[0].length, ((BitmapDrawable) iv.getDrawable()).getBitmap().getConfig());
         iv.setImageBitmap(bitmapNew);
+    }
+
+    public void changeParamBar1(View v){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Change value");
+
+        final LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        final TextView error = new TextView(this);
+        error.setText("Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
+        error.setGravity(Gravity.CENTER);
+        error.setVisibility(View.VISIBLE);
+        error.setTextColor(Color.BLACK);
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+
+        layout.addView(error);
+        layout.addView(input);
+        builder.setView(layout);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                m_Text = input.getText().toString();
+                System.out.println(m_Text);
+                int m_int = Integer.parseInt(m_Text);
+
+                if (m_int <= paramBarControl1.getMax()) {
+                    paramBarControlText1.setText(m_Text);
+                    paramBarValue1 = m_int;
+                    paramBarControl1.setProgress(m_int);
+                    messageBox.setText("Value changed.");
+                } else {
+                    messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
 
