@@ -120,7 +120,8 @@
                     android:indeterminate="false"
                     android:background="#40ff0000"
                     android:layout_column="1"
-                    android:layout_weight="29" />
+                    android:layout_weight="29"
+                    android:layout_marginRight="5dp" />
             </TableRow>
 
             <TableRow
@@ -144,7 +145,8 @@
                     android:max="255"
                     android:background="#4000ff00"
                     android:layout_column="1"
-                    android:layout_weight="29" />
+                    android:layout_weight="29"
+                    android:layout_marginRight="5dp" />
             </TableRow>
 
             <TableRow
@@ -168,7 +170,8 @@
                     android:max="255"
                     android:background="#400000ff"
                     android:layout_column="1"
-                    android:layout_weight="29" />
+                    android:layout_weight="29"
+                    android:layout_marginRight="5dp" />
 
             </TableRow>
 

@@ -38,6 +38,9 @@ public class Main extends Activity {
     final static int SELECT_PICTURE = 1;
 
     private TextView messageBox = null;
+    private ImageView displayBox = null;
+    private int imageWidth;
+    private int imageHeight;
 
     private TableRow paramBarControlRow1 = null;
     private TableRow paramBarControlRow2 = null;
@@ -55,13 +58,13 @@ public class Main extends Activity {
     private int paramBarValue2 = 0;
     private int paramBarValue3 = 0;
 
-    private boolean imageRead = true;
     private boolean cancelled = false;
     private int[][] pixelsCurrent;
     private int[][] pixelsOld;
+    private int[] pixelsTemp;
+    private Bitmap.Config bitmapConfig;
 
     private int xDelta;
-    private String m_Text = "";
 
     CharSequence imageProcess = "";
     CharSequence processes[] = new CharSequence[] {"Seuil", "Flou" , "Dilatation", "Erosion"};
@@ -101,6 +104,8 @@ public class Main extends Activity {
         messageBox = (TextView) findViewById(R.id.textBox);
         messageBox.setTextColor(Color.BLACK);
         messageBox.setText("Bienvenue !");
+
+        displayBox = (ImageView) findViewById(R.id.imageView1);
 
         paramBarControlRow1 = (TableRow) findViewById(R.id.paramBarRow1);
         paramBarControlRow2 = (TableRow) findViewById(R.id.paramBarRow2);
@@ -412,15 +417,13 @@ public class Main extends Activity {
         }
 
         try {
-            ImageView iv = (ImageView) findViewById(R.id.imageView1);
-
-            if (iv.getDrawable() == null) {
+            if (displayBox.getDrawable() == null) {
                 messageBox.setText("No image.");
 
                 return false;
             }
 
-            BitmapDrawable bitmapDrawable = ((BitmapDrawable) iv.getDrawable());
+            BitmapDrawable bitmapDrawable = ((BitmapDrawable) displayBox.getDrawable());
             Bitmap bitmap = bitmapDrawable.getBitmap();
 
             // 100 means no compression, the lower you go, the stronger the compression
@@ -450,11 +453,32 @@ public class Main extends Activity {
         if (imageProcess == ""){
             messageBox.setText("Aucun traitement sélectionné.");
         }
-        else if (imageProcess == "Seuil") {
-            applySeuil();
-        }
-        else if (imageProcess == "Flou") {
-            applyFlou();
+        else{
+            if (displayBox.getDrawable() == null) {
+                messageBox.setText("No image.");
+
+                return;
+            }
+
+            BitmapDrawable bitmapDrawable = ((BitmapDrawable) displayBox.getDrawable());
+            Bitmap bitmapCurrent = bitmapDrawable.getBitmap();
+            bitmapConfig = bitmapCurrent.getConfig();
+
+            for (int x=0; x<imageWidth; x++){
+                for (int y=0; y<imageHeight; y++){
+                    pixelsOld[x][y] = pixelsCurrent[x][y];
+                }
+            }
+
+            if (imageProcess == "Seuil") {
+                applySeuil();
+            }
+            else if (imageProcess == "Flou") {
+                applyFlou();
+            }
+
+            Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, imageWidth, imageHeight, bitmapConfig);
+            displayBox.setImageBitmap(bitmapNew);
         }
 
         findViewById(R.id.btCancel).setVisibility(View.VISIBLE);
@@ -468,45 +492,18 @@ public class Main extends Activity {
         int seuilValueG = paramBarValue2;
         int seuilValueB = paramBarValue3;
 
-        // On sélectionne l'image affichée et on la lit en bitmap.
-
-        ImageView iv = (ImageView) findViewById(R.id.imageView1);
-
-        if (iv.getDrawable() == null) {
-            messageBox.setText("No image.");
-
-            return;
-        }
-
-        BitmapDrawable bitmapDrawable = ((BitmapDrawable) iv.getDrawable());
-        Bitmap bitmapCurrent = bitmapDrawable.getBitmap();
-
-        // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
-
-        if (!imageRead) {
-            pixelsCurrent = new int[bitmapCurrent.getWidth()][bitmapCurrent.getHeight()];
-            pixelsOld = new int[bitmapCurrent.getWidth()][bitmapCurrent.getHeight()];
-        }
-
         // pixelsTemp est la table de l'image à retourner
-
-        int[] pixelsTemp = new int[bitmapCurrent.getHeight() * bitmapCurrent.getWidth()];
 
         int red, green, blue, RSeuil, GSeuil, BSeuil;
 
-        for (int x = 0; x < bitmapCurrent.getWidth(); x++) {
-            for (int y = 0; y < bitmapCurrent.getHeight(); y++) {
-
-                // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
-
-                if (!imageRead)
-                    pixelsCurrent[x][y] = bitmapCurrent.getPixel(x, y);
+        for (int x = 0; x < imageWidth; x++) {
+            for (int y = 0; y < imageHeight; y++) {
 
                 // On lit les 3 couleurs en [0..255]
 
-                red = Color.red(pixelsCurrent[x][y]);
-                green = Color.green(pixelsCurrent[x][y]);
-                blue = Color.blue(pixelsCurrent[x][y]);
+                red = Color.red(pixelsOld[x][y]);
+                green = Color.green(pixelsOld[x][y]);
+                blue = Color.blue(pixelsOld[x][y]);
 
                 // On applique le seuil.
 
@@ -528,72 +525,29 @@ public class Main extends Activity {
                     BSeuil = 255;
                 }
 
-                pixelsTemp[bitmapCurrent.getWidth() * y + x] = Color.rgb(RSeuil, GSeuil, BSeuil);
-
-                pixelsOld[x][y] = pixelsCurrent[x][y];
-                pixelsCurrent[x][y] = pixelsTemp[bitmapCurrent.getWidth() * y + x];
+                toPixelRGB(x, y, RSeuil, GSeuil, BSeuil);
             }
         }
 
-        // Dans tous les cas on considère la table rentrée dans pixelsCurrent.
-
-        imageRead = true;
-
-        // On remplace l'image affichée par l'image traitée.
-
-        Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, bitmapCurrent.getWidth(), bitmapCurrent.getHeight(), bitmapCurrent.getConfig());
-        iv.setImageBitmap(bitmapNew);
-
-        /*ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
-        byte[] imageInByte = stream.toByteArray();
-        ByteArrayInputStream bis = new ByteArrayInputStream(imageInByte);*/
     }
 
     public void applyFlou(){
 
         int flouWindow = paramBarValue1;
-        System.out.println(flouWindow);
-
-        // On sélectionne l'image affichée et on la lit en bitmap.
-
-        ImageView iv = (ImageView) findViewById(R.id.imageView1);
-
-        if (iv.getDrawable() == null) {
-            messageBox.setText("No image.");
-
-            return;
-        }
-
-        BitmapDrawable bitmapDrawable = ((BitmapDrawable) iv.getDrawable());
-        Bitmap bitmapCurrent = bitmapDrawable.getBitmap();
-
-        // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
-
-        if (!imageRead) {
-            pixelsCurrent = new int[bitmapCurrent.getWidth()][bitmapCurrent.getHeight()];
-            pixelsOld = new int[bitmapCurrent.getWidth()][bitmapCurrent.getHeight()];
-        }
-
-        // pixelsTemp est la table de l'image à retourner
-
-        int[] pixelsTemp = new int[bitmapCurrent.getHeight() * bitmapCurrent.getWidth()];
 
         int rFlou, gFlou, bFlou;
 
-        for (int x = 0; x < bitmapCurrent.getWidth(); x++) {
-            for (int y = 0; y < bitmapCurrent.getHeight(); y++) {
+        for (int x = 0; x < imageWidth; x++) {
+            for (int y = 0; y < imageHeight; y++) {
 
                 // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
 
-                if (!imageRead)
-                    pixelsCurrent[x][y] = bitmapCurrent.getPixel(x, y);
-                    pixelsTemp[bitmapCurrent.getWidth() * y + x] = pixelsCurrent[x][y];
+                toPixelCopy(x,y,pixelsOld[x][y]);
             }
         }
 
-        for (int x = flouWindow; x < bitmapCurrent.getWidth()-flouWindow; x++) {
-            for (int y = flouWindow; y < bitmapCurrent.getHeight()-flouWindow; y++) {
+        for (int x = flouWindow; x < imageWidth-flouWindow; x++) {
+            for (int y = flouWindow; y < imageHeight-flouWindow; y++) {
 
                 rFlou = 0;
                 gFlou = 0;
@@ -602,9 +556,9 @@ public class Main extends Activity {
                 // On applique le flou en lisant les couleurs en [0..255]
                 for (int i = -flouWindow; i < flouWindow + 1; i++){
                     for (int j = -flouWindow; j < flouWindow + 1; j++){
-                        rFlou += Color.red(pixelsCurrent[x+i][y+j]);
-                        gFlou += Color.green(pixelsCurrent[x+i][y+j]);
-                        bFlou += Color.blue(pixelsCurrent[x+i][y+j]);
+                        rFlou += Color.red(pixelsOld[x + i][y + j]);
+                        gFlou += Color.green(pixelsOld[x + i][y + j]);
+                        bFlou += Color.blue(pixelsOld[x + i][y + j]);
                     }
                 }
 
@@ -612,36 +566,22 @@ public class Main extends Activity {
                 gFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
                 bFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
 
-                pixelsTemp[bitmapCurrent.getWidth() * y + x] = Color.rgb(rFlou, gFlou, bFlou);
-
-                pixelsOld[x][y] = pixelsCurrent[x][y];
-                pixelsCurrent[x][y] = pixelsTemp[bitmapCurrent.getWidth() * y + x];
+                toPixelRGB(x, y, rFlou, gFlou, bFlou);
             }
         }
+    }
 
-        // Dans tous les cas on considère la table rentrée dans pixelsCurrent.
+    public void toPixelCopy(int x, int y, int C){
+        pixelsTemp[imageWidth * y + x] = C;
+        pixelsCurrent[x][y] = pixelsTemp[imageWidth * y + x];
+    }
 
-        imageRead = true;
-
-        // On remplace l'image affichée par l'image traitée.
-
-        Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, bitmapCurrent.getWidth(), bitmapCurrent.getHeight(), bitmapCurrent.getConfig());
-        iv.setImageBitmap(bitmapNew);
-
-        /*ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
-        byte[] imageInByte = stream.toByteArray();
-        ByteArrayInputStream bis = new ByteArrayInputStream(imageInByte);*/
+    public void toPixelRGB(int x, int y, int R, int G, int B){
+        pixelsTemp[imageWidth * y + x] = Color.rgb(R,G,B);
+        pixelsCurrent[x][y] = pixelsTemp[imageWidth * y + x];
     }
 
     public void btCancelClick(View v) {
-        ImageView iv = (ImageView) findViewById(R.id.imageView1);
-
-        /*if (iv.getDrawable() == null) {
-            messageBox.setText("No image.");
-
-            return;
-        }*/
 
         int pxlSize = (pixelsCurrent.length) * (pixelsCurrent[0].length);
         int[] pixelsTemp = new int[pxlSize];
@@ -665,21 +605,24 @@ public class Main extends Activity {
             cancelled = false;
         }
 
-        Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, pixelsCurrent.length, pixelsCurrent[0].length, ((BitmapDrawable) iv.getDrawable()).getBitmap().getConfig());
-        iv.setImageBitmap(bitmapNew);
+        Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, pixelsCurrent.length, pixelsCurrent[0].length, ((BitmapDrawable) displayBox.getDrawable()).getBitmap().getConfig());
+        displayBox.setImageBitmap(bitmapNew);
     }
 
     public void changeParamBar1(View v){
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Change value");
 
         final LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
+
         final TextView error = new TextView(this);
         error.setText("Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
         error.setGravity(Gravity.CENTER);
         error.setVisibility(View.VISIBLE);
-        error.setTextColor(Color.BLACK);
+        error.setTextColor(Color.WHITE);
+
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
 
@@ -690,8 +633,7 @@ public class Main extends Activity {
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                m_Text = input.getText().toString();
-                System.out.println(m_Text);
+                String m_Text = input.getText().toString();
                 int m_int = Integer.parseInt(m_Text);
 
                 if (m_int <= paramBarControl1.getMax()) {
@@ -736,7 +678,19 @@ public class Main extends Activity {
                     Bitmap bitmap = BitmapFactory.decodeFile(path);
                     //Afficher le Bitmap
                     mImageView.setImageBitmap(bitmap);
-                    imageRead = false;
+                    imageWidth = bitmap.getWidth();
+                    imageHeight = bitmap.getHeight();
+
+                    pixelsCurrent = new int[imageWidth][imageHeight];
+                    pixelsOld = new int[imageWidth][imageHeight];
+                    pixelsTemp = new int[imageWidth * imageHeight];
+
+                    for (int x = 0; x < imageWidth; x++) {
+                        for (int y = 0; y < imageHeight; y++) {
+                            pixelsCurrent[x][y] = bitmap.getPixel(x, y);
+                        }
+                    }
+
                     ((Button) findViewById(R.id.btCancel)).setText("Annuler");
                     ((Button) findViewById(R.id.btCancel)).setVisibility(View.GONE);
                     break;
@@ -747,7 +701,19 @@ public class Main extends Activity {
                     bitmap = BitmapFactory.decodeFile(path);
                     //Afficher le Bitmap
                     mImageView.setImageBitmap(bitmap);
-                    imageRead = false;
+                    imageWidth = bitmap.getWidth();
+                    imageHeight = bitmap.getHeight();
+
+                    pixelsCurrent = new int[imageWidth][imageHeight];
+                    pixelsOld = new int[imageWidth][imageHeight];
+                    pixelsTemp = new int[imageWidth * imageHeight];
+
+                    for (int x = 0; x < imageWidth; x++) {
+                        for (int y = 0; y < imageHeight; y++) {
+                            pixelsCurrent[x][y] = bitmap.getPixel(x, y);
+                        }
+                    }
+
                     ((Button) findViewById(R.id.btCancel)).setText("Annuler");
                     ((Button) findViewById(R.id.btCancel)).setVisibility(View.GONE);
                     break;
