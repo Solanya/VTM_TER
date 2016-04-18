@@ -8,7 +8,7 @@
     android:background="#ffffff">
 
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@+id/imageDisplay"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_row="2"
@@ -39,7 +39,8 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:id="@+id/menuLayout">
 
             <TableLayout
                 android:layout_width="match_parent"
@@ -197,6 +198,34 @@
 
             </TableRow>
         </TableLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/progressLayout"
+            android:weightSum="1">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Text"
+                android:id="@+id/progressText"
+                android:layout_gravity="center"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/progressBar"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:max="1"
+                android:progress="0" />
+
+        </LinearLayout>
 
     </ViewFlipper>
 

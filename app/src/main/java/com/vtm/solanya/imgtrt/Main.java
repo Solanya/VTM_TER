@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -23,6 +24,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -38,9 +40,14 @@ public class Main extends Activity {
     final static int SELECT_PICTURE = 1;
 
     private TextView messageBox = null;
+    private TextView progressBox = null;
     private ImageView displayBox = null;
     private int imageWidth;
     private int imageHeight;
+
+    private int progressCount = 0;
+
+    private ProgressBar progressBarControl = null;
 
     private TableRow paramBarControlRow1 = null;
     private TableRow paramBarControlRow2 = null;
@@ -105,7 +112,12 @@ public class Main extends Activity {
         messageBox.setTextColor(Color.BLACK);
         messageBox.setText("Bienvenue !");
 
-        displayBox = (ImageView) findViewById(R.id.imageView1);
+        progressBox = (TextView) findViewById(R.id.progressText);
+        progressBox.setTextColor(Color.BLACK);
+
+        displayBox = (ImageView) findViewById(R.id.imageDisplay);
+
+        progressBarControl = (ProgressBar) findViewById(R.id.progressBar);
 
         paramBarControlRow1 = (TableRow) findViewById(R.id.paramBarRow1);
         paramBarControlRow2 = (TableRow) findViewById(R.id.paramBarRow2);
@@ -449,9 +461,32 @@ public class Main extends Activity {
         processChooser.show();
     }
 
+    private class AsyncApplyTask extends AsyncTask<Void, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (imageProcess == "Seuil") {
+                applySeuil();
+            }
+            else if (imageProcess == "Flou") {
+                applyFlou();
+            }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, imageWidth, imageHeight, bitmapConfig);
+            displayBox.setImageBitmap(bitmapNew);
+            ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
+        }
+    }
+
     public void btApplyClick(View v) {
+
         if (imageProcess == ""){
             messageBox.setText("Aucun traitement sélectionné.");
+
+            return;
         }
         else{
             if (displayBox.getDrawable() == null) {
@@ -470,15 +505,13 @@ public class Main extends Activity {
                 }
             }
 
-            if (imageProcess == "Seuil") {
-                applySeuil();
-            }
-            else if (imageProcess == "Flou") {
-                applyFlou();
-            }
+            progressBox.setText(imageProcess + " en cours...");
+            progressCount = 0;
+            progressBarControl.setProgress(0);
+            progressBarControl.setMax(imageHeight * imageWidth);
+            ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
 
-            Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, imageWidth, imageHeight, bitmapConfig);
-            displayBox.setImageBitmap(bitmapNew);
+            new AsyncApplyTask().execute();
         }
 
         findViewById(R.id.btCancel).setVisibility(View.VISIBLE);
@@ -574,11 +607,20 @@ public class Main extends Activity {
     public void toPixelCopy(int x, int y, int C){
         pixelsTemp[imageWidth * y + x] = C;
         pixelsCurrent[x][y] = pixelsTemp[imageWidth * y + x];
+        //progressUpdate();
     }
 
     public void toPixelRGB(int x, int y, int R, int G, int B){
         pixelsTemp[imageWidth * y + x] = Color.rgb(R,G,B);
         pixelsCurrent[x][y] = pixelsTemp[imageWidth * y + x];
+        progressUpdate();
+    }
+
+    public void progressUpdate(){
+        progressCount += 1;
+        if ((progressCount%1000 == 0) | (progressCount == imageHeight*imageWidth)) {
+            progressBarControl.setProgress(progressCount);
+        }
     }
 
     public void btCancelClick(View v) {
@@ -667,7 +709,7 @@ public class Main extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ImageView mImageView = (ImageView) findViewById(R.id.imageView1);
+        ImageView mImageView = (ImageView) findViewById(R.id.imageDisplay);
 
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
