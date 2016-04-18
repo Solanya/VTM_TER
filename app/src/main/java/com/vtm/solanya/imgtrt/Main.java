@@ -207,6 +207,7 @@ public class Main extends Activity {
 
                 ((Button) findViewById(R.id.btApply)).setVisibility(View.VISIBLE);
                 messageBox.setText("Choix : " + imageProcess);
+                ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
             }
         });
 
@@ -458,6 +459,8 @@ public class Main extends Activity {
     }
 
     public void btChooseClick(View v) {
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_right);
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
         processChooser.show();
     }
 
