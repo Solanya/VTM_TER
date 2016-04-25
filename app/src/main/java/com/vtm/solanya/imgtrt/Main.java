@@ -39,46 +39,46 @@ public class Main extends Activity {
 
     final static int SELECT_PICTURE = 1;
 
-    private TextView messageBox = null;
-    private TextView progressBox = null;
-    private ImageView displayBox = null;
-    private int imageWidth;
-    private int imageHeight;
+    public TextView messageBox = null;
+    public TextView progressBox = null;
+    public ImageView displayBox = null;
+    public int imageWidth;
+    public int imageHeight;
 
-    private int progressCount = 0;
+    public int progressCount = 0;
 
-    private ProgressBar progressBarControl = null;
+    public ProgressBar progressBarControl = null;
 
-    private TableRow paramBarControlRow1 = null;
-    private TableRow paramBarControlRow2 = null;
-    private TableRow paramBarControlRow3 = null;
+    public TableRow paramBarControlRow1 = null;
+    public TableRow paramBarControlRow2 = null;
+    public TableRow paramBarControlRow3 = null;
 
-    private SeekBar paramBarControl1 = null;
-    private SeekBar paramBarControl2 = null;
-    private SeekBar paramBarControl3 = null;
+    public SeekBar paramBarControl1 = null;
+    public SeekBar paramBarControl2 = null;
+    public SeekBar paramBarControl3 = null;
 
-    private TextView paramBarControlText1 = null;
-    private TextView paramBarControlText2 = null;
-    private TextView paramBarControlText3 = null;
+    public TextView paramBarControlText1 = null;
+    public TextView paramBarControlText2 = null;
+    public TextView paramBarControlText3 = null;
 
-    private int paramBarValue1 = 0;
-    private int paramBarValue2 = 0;
-    private int paramBarValue3 = 0;
+    public int paramBarValue1 = 0;
+    public int paramBarValue2 = 0;
+    public int paramBarValue3 = 0;
 
-    private boolean cancelled = false;
-    private int[][] pixelsCurrent;
-    private int[][] pixelsOld;
-    private int[] pixelsTemp;
-    private Bitmap.Config bitmapConfig;
+    public boolean cancelled = false;
+    public int[][] pixelsCurrent;
+    public int[][] pixelsOld;
+    public int[] pixelsTemp;
+    public Bitmap.Config bitmapConfig;
 
-    private int xDelta;
+    public int xDelta;
 
-    CharSequence imageProcess = "";
-    CharSequence processes[] = new CharSequence[] {"Seuil", "Flou" , "Dilatation", "Erosion"};
-    AlertDialog.Builder processChooser;
+    public CharSequence imageProcess = "";
+    public CharSequence processes[] = new CharSequence[] {"Seuil", "Flou" , "Dilatation", "Erosion"};
+    public AlertDialog.Builder processChooser;
 
-    private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-    private Uri fileUri;
+    public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+    public Uri fileUri;
 
     // TODO : Add file permissions to save images for Android 6.0+
     /*public  boolean isStoragePermissionGranted() {
@@ -512,7 +512,11 @@ public class Main extends Activity {
             progressCount = 0;
             progressBarControl.setProgress(0);
             progressBarControl.setMax(imageHeight * imageWidth);
+            ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_bottom);
+            ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_top);
             ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
+            ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_top);
+            ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_bottom);
 
             new AsyncApplyTask().execute();
         }
