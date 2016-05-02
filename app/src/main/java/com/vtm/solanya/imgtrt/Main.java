@@ -2,6 +2,8 @@ package com.vtm.solanya.imgtrt;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -13,7 +15,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.InputType;
 import android.util.Log;
@@ -30,22 +31,28 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-
 public class Main extends Activity {
-    //constante pour définir l'id du type image
 
     final static int SELECT_PICTURE = 1;
+    final static int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+
+    private static Context appContext;
+    private static Activity appActivity;
+
+    public static Context getContext(){
+        return appContext;
+    }
+
+    public static Activity getActivity(){
+        return appActivity;
+    }
 
     public TextView messageBox = null;
     public TextView progressBox = null;
     public ImageView displayBox = null;
-    public int imageWidth;
-    public int imageHeight;
 
-    public int progressCount = 0;
+    public Image currentImage = null;
+    public Traitement currentProcess = null;
 
     public ProgressBar progressBarControl = null;
 
@@ -61,24 +68,12 @@ public class Main extends Activity {
     public TextView paramBarControlText2 = null;
     public TextView paramBarControlText3 = null;
 
-    public int paramBarValue1 = 0;
-    public int paramBarValue2 = 0;
-    public int paramBarValue3 = 0;
-
-    public boolean cancelled = false;
-    public int[][] pixelsCurrent;
-    public int[][] pixelsOld;
-    public int[] pixelsTemp;
-    public Bitmap.Config bitmapConfig;
-
     public int xDelta;
 
     public CharSequence imageProcess = "";
     public CharSequence processes[] = new CharSequence[] {"Seuil", "Flou" , "Dilatation", "Erosion"};
     public AlertDialog.Builder processChooser;
 
-    public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-    public Uri fileUri;
 
     // TODO : Add file permissions to save images for Android 6.0+
     /*public  boolean isStoragePermissionGranted() {
@@ -107,6 +102,9 @@ public class Main extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        appContext = this;
+        appActivity = this;
 
         messageBox = (TextView) findViewById(R.id.textBox);
         messageBox.setTextColor(Color.BLACK);
@@ -142,42 +140,44 @@ public class Main extends Activity {
                 if (which == 0) {
 
                     imageProcess = "Seuil";
-                    paramBarValue1 = 0;
-                    paramBarValue2 = 0;
-                    paramBarValue3 = 0;
+                    currentProcess = new Seuil(appContext, appActivity, currentImage);
+                    currentProcess.paramBarValue1 = 0;
+                    currentProcess.paramBarValue2 = 0;
+                    currentProcess.paramBarValue3 = 0;
 
                     paramBarControlRow1.setVisibility(View.VISIBLE);
-                    paramBarControl1.setProgress(paramBarValue1);
+                    paramBarControl1.setProgress(currentProcess.paramBarValue1);
                     paramBarControl1.setMax(255);
                     paramBarControl1.setBackgroundColor(Color.parseColor("#40ff0000"));
                     paramBarControlText1.setTextColor(Color.RED);
-                    paramBarControlText1.setText(Integer.toString(paramBarValue1));
+                    paramBarControlText1.setText(Integer.toString(currentProcess.paramBarValue1));
 
                     paramBarControlRow2.setVisibility(View.VISIBLE);
-                    paramBarControl2.setProgress(paramBarValue2);
+                    paramBarControl2.setProgress(currentProcess.paramBarValue2);
                     paramBarControl2.setMax(255);
                     paramBarControl2.setBackgroundColor(Color.parseColor("#4000ff00"));
                     paramBarControlText2.setTextColor(Color.GREEN);
-                    paramBarControlText2.setText(Integer.toString(paramBarValue2));
+                    paramBarControlText2.setText(Integer.toString(currentProcess.paramBarValue2));
 
                     paramBarControlRow3.setVisibility(View.VISIBLE);
-                    paramBarControl3.setProgress(paramBarValue3);
+                    paramBarControl3.setProgress(currentProcess.paramBarValue3);
                     paramBarControl3.setMax(255);
                     paramBarControl3.setBackgroundColor(Color.parseColor("#400000ff"));
                     paramBarControlText3.setTextColor(Color.BLUE);
-                    paramBarControlText3.setText(Integer.toString(paramBarValue3));
+                    paramBarControlText3.setText(Integer.toString(currentProcess.paramBarValue3));
 
                 } else if (which == 1) {
 
                     imageProcess = "Flou";
-                    paramBarValue1 = 0;
+                    currentProcess = new Flou(appContext, appActivity, currentImage);
+                    currentProcess.paramBarValue1 = 0;
 
                     paramBarControlRow1.setVisibility(View.VISIBLE);
-                    paramBarControl1.setProgress(paramBarValue1);
+                    paramBarControl1.setProgress(currentProcess.paramBarValue1);
                     paramBarControl1.setMax(5);
                     paramBarControl1.setBackgroundColor(Color.parseColor("#40000000"));
                     paramBarControlText1.setTextColor(Color.BLACK);
-                    paramBarControlText1.setText(Integer.toString(paramBarValue1));
+                    paramBarControlText1.setText(Integer.toString(currentProcess.paramBarValue1));
 
                     paramBarControlRow2.setVisibility(View.GONE);
 
@@ -292,7 +292,7 @@ public class Main extends Activity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                paramBarValue1 = progress;
+                currentProcess.paramBarValue1 = progress;
             }
 
             @Override
@@ -302,7 +302,7 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                paramBarControlText1.setText(Integer.toString(paramBarValue1));
+                paramBarControlText1.setText(Integer.toString(currentProcess.paramBarValue1));
             }
         });
 
@@ -310,7 +310,7 @@ public class Main extends Activity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                paramBarValue2 = progress;
+                currentProcess.paramBarValue2 = progress;
             }
 
             @Override
@@ -320,7 +320,7 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                paramBarControlText2.setText(Integer.toString(paramBarValue2));
+                paramBarControlText2.setText(Integer.toString(currentProcess.paramBarValue2));
             }
         });
 
@@ -328,7 +328,7 @@ public class Main extends Activity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                paramBarValue3 = progress;
+                currentProcess.paramBarValue3 = progress;
             }
 
             @Override
@@ -338,7 +338,7 @@ public class Main extends Activity {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                paramBarControlText3.setText(Integer.toString(paramBarValue3));
+                paramBarControlText3.setText(Integer.toString(currentProcess.paramBarValue3));
             }
         });
     }
@@ -382,7 +382,6 @@ public class Main extends Activity {
      * @param v
      */
     public void btLoadClick(View v) {
-        //Création puis ouverture de la boite de dialogue
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -394,318 +393,6 @@ public class Main extends Activity {
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
-    public boolean btSaveClick(View v) {
-        String fullPath = "";
-        OutputStream fOut = null;
-        File file;
-
-        try {
-            fullPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "Saved Images";
-
-            File dir = new File(fullPath);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            file = new File(fullPath, "image.png");
-            file.createNewFile();
-            fOut = new FileOutputStream(file);
-        } catch (Exception e) {
-            fullPath = getFilesDir().getAbsolutePath() + "/Saved Images";
-
-            File dir = new File(fullPath);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            file = new File(fullPath, "image.png");
-            try {
-                file.createNewFile();
-                fOut = new FileOutputStream(file);
-            } catch (Exception e2) {
-                Log.e("Save Image", e.getMessage());
-                messageBox.setText("Error saving.");
-                return false;
-            }
-        }
-
-        try {
-            if (displayBox.getDrawable() == null) {
-                messageBox.setText("No image.");
-
-                return false;
-            }
-
-            BitmapDrawable bitmapDrawable = ((BitmapDrawable) displayBox.getDrawable());
-            Bitmap bitmap = bitmapDrawable.getBitmap();
-
-            // 100 means no compression, the lower you go, the stronger the compression
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
-            fOut.flush();
-            fOut.close();
-
-            MediaStore.Images.Media.insertImage(this.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
-
-            messageBox.setText("Image saved.");
-
-            return true;
-
-
-        } catch (Exception e) {
-            Log.e("Save Image", e.getMessage());
-            messageBox.setText("Error saving.");
-            return false;
-        }
-    }
-
-    public void btChooseClick(View v) {
-        ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_right);
-        ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
-        processChooser.show();
-    }
-
-    private class AsyncApplyTask extends AsyncTask<Void, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(Void... params) {
-            if (imageProcess == "Seuil") {
-                applySeuil();
-            }
-            else if (imageProcess == "Flou") {
-                applyFlou();
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void result) {
-            Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, imageWidth, imageHeight, bitmapConfig);
-            displayBox.setImageBitmap(bitmapNew);
-            ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
-        }
-    }
-
-    public void btApplyClick(View v) {
-
-        if (imageProcess == ""){
-            messageBox.setText("Aucun traitement sélectionné.");
-
-            return;
-        }
-        else{
-            if (displayBox.getDrawable() == null) {
-                messageBox.setText("No image.");
-
-                return;
-            }
-
-            BitmapDrawable bitmapDrawable = ((BitmapDrawable) displayBox.getDrawable());
-            Bitmap bitmapCurrent = bitmapDrawable.getBitmap();
-            bitmapConfig = bitmapCurrent.getConfig();
-
-            for (int x=0; x<imageWidth; x++){
-                for (int y=0; y<imageHeight; y++){
-                    pixelsOld[x][y] = pixelsCurrent[x][y];
-                }
-            }
-
-            progressBox.setText(imageProcess + " en cours...");
-            progressCount = 0;
-            progressBarControl.setProgress(0);
-            progressBarControl.setMax(imageHeight * imageWidth);
-            ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_bottom);
-            ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_top);
-            ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
-            ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_top);
-            ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_bottom);
-
-            new AsyncApplyTask().execute();
-        }
-
-        findViewById(R.id.btCancel).setVisibility(View.VISIBLE);
-        ((Button) findViewById(R.id.btCancel)).setText("Annuler");
-        cancelled = false;
-    }
-
-    public void applySeuil(){
-
-        int seuilValueR = paramBarValue1;
-        int seuilValueG = paramBarValue2;
-        int seuilValueB = paramBarValue3;
-
-        // pixelsTemp est la table de l'image à retourner
-
-        int red, green, blue, RSeuil, GSeuil, BSeuil;
-
-        for (int x = 0; x < imageWidth; x++) {
-            for (int y = 0; y < imageHeight; y++) {
-
-                // On lit les 3 couleurs en [0..255]
-
-                red = Color.red(pixelsOld[x][y]);
-                green = Color.green(pixelsOld[x][y]);
-                blue = Color.blue(pixelsOld[x][y]);
-
-                // On applique le seuil.
-
-                if (red < seuilValueR) {
-                    RSeuil = 0;
-                } else {
-                    RSeuil = 255;
-                }
-
-                if (green < seuilValueG) {
-                    GSeuil = 0;
-                } else {
-                    GSeuil = 255;
-                }
-
-                if (blue < seuilValueB) {
-                    BSeuil = 0;
-                } else {
-                    BSeuil = 255;
-                }
-
-                toPixelRGB(x, y, RSeuil, GSeuil, BSeuil);
-            }
-        }
-
-    }
-
-    public void applyFlou(){
-
-        int flouWindow = paramBarValue1;
-
-        int rFlou, gFlou, bFlou;
-
-        for (int x = 0; x < imageWidth; x++) {
-            for (int y = 0; y < imageHeight; y++) {
-
-                // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
-
-                toPixelCopy(x,y,pixelsOld[x][y]);
-            }
-        }
-
-        for (int x = flouWindow; x < imageWidth-flouWindow; x++) {
-            for (int y = flouWindow; y < imageHeight-flouWindow; y++) {
-
-                rFlou = 0;
-                gFlou = 0;
-                bFlou = 0;
-
-                // On applique le flou en lisant les couleurs en [0..255]
-                for (int i = -flouWindow; i < flouWindow + 1; i++){
-                    for (int j = -flouWindow; j < flouWindow + 1; j++){
-                        rFlou += Color.red(pixelsOld[x + i][y + j]);
-                        gFlou += Color.green(pixelsOld[x + i][y + j]);
-                        bFlou += Color.blue(pixelsOld[x + i][y + j]);
-                    }
-                }
-
-                rFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
-                gFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
-                bFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
-
-                toPixelRGB(x, y, rFlou, gFlou, bFlou);
-            }
-        }
-    }
-
-    public void toPixelCopy(int x, int y, int C){
-        pixelsTemp[imageWidth * y + x] = C;
-        pixelsCurrent[x][y] = pixelsTemp[imageWidth * y + x];
-        //progressUpdate();
-    }
-
-    public void toPixelRGB(int x, int y, int R, int G, int B){
-        pixelsTemp[imageWidth * y + x] = Color.rgb(R,G,B);
-        pixelsCurrent[x][y] = pixelsTemp[imageWidth * y + x];
-        progressUpdate();
-    }
-
-    public void progressUpdate(){
-        progressCount += 1;
-        if ((progressCount%1000 == 0) | (progressCount == imageHeight*imageWidth)) {
-            progressBarControl.setProgress(progressCount);
-        }
-    }
-
-    public void btCancelClick(View v) {
-
-        int pxlSize = (pixelsCurrent.length) * (pixelsCurrent[0].length);
-        int[] pixelsTemp = new int[pxlSize];
-
-        System.out.println(pixelsCurrent.length);System.out.println(pixelsCurrent[0].length);
-
-        for (int x=0; x<pixelsCurrent.length; x++){
-            for (int y=0; y<pixelsCurrent[0].length; y++){
-                pixelsTemp[pixelsCurrent.length * y + x] = pixelsOld[x][y];
-                pixelsOld[x][y] = pixelsCurrent[x][y];
-                pixelsCurrent[x][y] = pixelsTemp[pixelsCurrent.length * y + x];
-            }
-        }
-
-        if (!cancelled){
-            ((Button) findViewById(R.id.btCancel)).setText("Refaire");
-            cancelled = true;
-        }
-        else {
-            ((Button) findViewById(R.id.btCancel)).setText("Annuler");
-            cancelled = false;
-        }
-
-        Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, pixelsCurrent.length, pixelsCurrent[0].length, ((BitmapDrawable) displayBox.getDrawable()).getBitmap().getConfig());
-        displayBox.setImageBitmap(bitmapNew);
-    }
-
-    public void changeParamBar1(View v){
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Change value");
-
-        final LinearLayout layout = new LinearLayout(this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-
-        final TextView error = new TextView(this);
-        error.setText("Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
-        error.setGravity(Gravity.CENTER);
-        error.setVisibility(View.VISIBLE);
-        error.setTextColor(Color.WHITE);
-
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
-
-        layout.addView(error);
-        layout.addView(input);
-        builder.setView(layout);
-
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String m_Text = input.getText().toString();
-                int m_int = Integer.parseInt(m_Text);
-
-                if (m_int <= paramBarControl1.getMax()) {
-                    paramBarControlText1.setText(m_Text);
-                    paramBarValue1 = m_int;
-                    paramBarControl1.setProgress(m_int);
-                    messageBox.setText("Value changed.");
-                } else {
-                    messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
-                }
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        builder.show();
-    }
-
-
     /**
      * Retour de la boite de dialogue
      *
@@ -716,55 +403,16 @@ public class Main extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ImageView mImageView = (ImageView) findViewById(R.id.imageDisplay);
 
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case SELECT_PICTURE:
-                    String path = getRealPathFromURI(data.getData());
-                    Log.d("Choose Picture", path);
-                    //Transformer la photo en Bitmap
-                    Bitmap bitmap = BitmapFactory.decodeFile(path);
-                    //Afficher le Bitmap
-                    mImageView.setImageBitmap(bitmap);
-                    imageWidth = bitmap.getWidth();
-                    imageHeight = bitmap.getHeight();
-
-                    pixelsCurrent = new int[imageWidth][imageHeight];
-                    pixelsOld = new int[imageWidth][imageHeight];
-                    pixelsTemp = new int[imageWidth * imageHeight];
-
-                    for (int x = 0; x < imageWidth; x++) {
-                        for (int y = 0; y < imageHeight; y++) {
-                            pixelsCurrent[x][y] = bitmap.getPixel(x, y);
-                        }
-                    }
-
-                    ((Button) findViewById(R.id.btCancel)).setText("Annuler");
-                    ((Button) findViewById(R.id.btCancel)).setVisibility(View.GONE);
+                    currentImage = new Image(appContext, appActivity);
+                    currentImage.loadImage(data);
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
-                    path = getRealPathFromURI(data.getData());
-                    Log.d("Choose Picture", path);
-                    //Transformer la photo en Bitmap
-                    bitmap = BitmapFactory.decodeFile(path);
-                    //Afficher le Bitmap
-                    mImageView.setImageBitmap(bitmap);
-                    imageWidth = bitmap.getWidth();
-                    imageHeight = bitmap.getHeight();
-
-                    pixelsCurrent = new int[imageWidth][imageHeight];
-                    pixelsOld = new int[imageWidth][imageHeight];
-                    pixelsTemp = new int[imageWidth * imageHeight];
-
-                    for (int x = 0; x < imageWidth; x++) {
-                        for (int y = 0; y < imageHeight; y++) {
-                            pixelsCurrent[x][y] = bitmap.getPixel(x, y);
-                        }
-                    }
-
-                    ((Button) findViewById(R.id.btCancel)).setText("Annuler");
-                    ((Button) findViewById(R.id.btCancel)).setVisibility(View.GONE);
+                    currentImage = new Image(appContext, appActivity);
+                    currentImage.loadCamImage(data);
                     break;
             }
         }
@@ -796,4 +444,83 @@ public class Main extends Activity {
         }
         return result;
     }
+
+    public boolean btSaveClick(View v) {
+        return currentImage.saveImage();
+    }
+
+    public void btChooseClick(View v) {
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_right);
+        ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
+        processChooser.show();
+    }
+
+
+
+    public void btApplyClick(View v) {
+        if (imageProcess == ""){
+            messageBox.setText("Aucun traitement sélectionné.");
+            return;
+        }
+        else{
+            progressBox.setText(imageProcess + " en cours...");
+            currentProcess.initializeProcess();
+        }
+    }
+
+    public void btCancelClick(View v) {
+        currentImage.cancelProcess();
+    }
+
+    public void changeParamBar1(View v){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Change value");
+
+        final LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        final TextView error = new TextView(this);
+        error.setText("Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
+        error.setGravity(Gravity.CENTER);
+        error.setVisibility(View.VISIBLE);
+        error.setTextColor(Color.WHITE);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+
+        layout.addView(error);
+        layout.addView(input);
+        builder.setView(layout);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String m_Text = input.getText().toString();
+                int m_int = Integer.parseInt(m_Text);
+
+                if (m_int <= paramBarControl1.getMax()) {
+                    paramBarControlText1.setText(m_Text);
+                    currentProcess.paramBarValue1 = m_int;
+                    paramBarControl1.setProgress(m_int);
+                    messageBox.setText("Value changed.");
+                } else {
+                    messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+
+
+
+
 }
