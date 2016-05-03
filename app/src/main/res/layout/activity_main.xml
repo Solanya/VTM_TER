@@ -44,47 +44,61 @@
 
             <TableLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="fill_parent"
                 android:id="@+id/menuGrid"
                 android:columnOrderPreserved="false"
                 android:useDefaultMargins="false">
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:baselineAligned="false"
+                    android:measureWithLargestChild="false"
+                    android:layout_weight="1">
 
-                    <Button
+                    <ImageButton
                         android:id="@+id/btLoad"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Load"
-                        android:layout_column="0" />
+                        android:layout_column="0"
+                        android:background="@mipmap/ic_load"
+                        android:cropToPadding="false"
+                        android:adjustViewBounds="false"
+                        android:layout_gravity="center_vertical" />
 
-                    <Button
+                    <ImageButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Cam"
                         android:id="@+id/btCam"
-                        android:layout_column="1" />
+                        android:layout_column="1"
+                        android:background="@mipmap/ic_cam"
+                        android:layout_gravity="center_vertical" />
 
-                    <Button
+                    <ImageButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Save"
                         android:id="@+id/btSave"
-                        android:layout_column="2" />
+                        android:layout_column="2"
+                        android:background="@mipmap/ic_save"
+                        android:layout_gravity="center_vertical" />
                 </TableRow>
 
                 <TableRow
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
 
-                    <Button
+                    <ImageButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Choose"
                         android:id="@+id/btChoose"
-                        android:layout_column="0" />
+                        android:layout_column="0"
+                        android:background="@mipmap/ic_process"
+                        android:layout_gravity="center_vertical" />
 
                 </TableRow>
 
@@ -181,20 +195,24 @@
                 android:layout_height="match_parent"
                 android:id="@+id/paramBtRow">
 
-                <Button
+                <ImageButton
                     android:id="@+id/btApply"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Apply"
                     android:layout_column="0"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    android:background="@mipmap/ic_apply"
+                    android:layout_gravity="center_vertical" />
 
-                <Button
+                <ImageButton
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Annuler"
                     android:id="@+id/btCancel"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    android:background="@mipmap/ic_undo"
+                    android:layout_gravity="center_vertical" />
 
             </TableRow>
         </TableLayout>

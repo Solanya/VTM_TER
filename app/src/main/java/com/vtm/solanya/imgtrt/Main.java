@@ -22,6 +22,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -205,7 +206,7 @@ public class Main extends Activity {
 
                 }
 
-                ((Button) findViewById(R.id.btApply)).setVisibility(View.VISIBLE);
+                ((ImageButton) findViewById(R.id.btApply)).setVisibility(View.VISIBLE);
                 messageBox.setText("Choix : " + imageProcess);
                 ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
             }
@@ -224,7 +225,7 @@ public class Main extends Activity {
 
         // Bouton de chargement depuis la gallerie
 
-        ((Button) findViewById(R.id.btLoad)).setOnClickListener(new View.OnClickListener() {
+        ((ImageButton) findViewById(R.id.btLoad)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btLoadClick(v);
@@ -233,7 +234,7 @@ public class Main extends Activity {
 
         // Bouton d'appel de l'appareil photo
 
-        ((Button) findViewById(R.id.btCam)).setOnClickListener(new View.OnClickListener() {
+        ((ImageButton) findViewById(R.id.btCam)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btCamClick(v);
@@ -242,7 +243,7 @@ public class Main extends Activity {
 
         // Bouton de sauvegarde de l'image
 
-        ((Button) findViewById(R.id.btSave)).setOnClickListener(new View.OnClickListener() {
+        ((ImageButton) findViewById(R.id.btSave)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btSaveClick(v);
@@ -251,7 +252,7 @@ public class Main extends Activity {
 
         // Bouton pour choisir le traitement
 
-        ((Button) findViewById(R.id.btChoose)).setOnClickListener(new View.OnClickListener() {
+        ((ImageButton) findViewById(R.id.btChoose)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btChooseClick(v);
@@ -260,7 +261,7 @@ public class Main extends Activity {
 
         // Bouton pour appliquer le traitement
 
-        ((Button) findViewById(R.id.btApply)).setOnClickListener(new View.OnClickListener() {
+        ((ImageButton) findViewById(R.id.btApply)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btApplyClick(v);
@@ -269,7 +270,7 @@ public class Main extends Activity {
 
         // Bouton pour annuler/refaire le traitement
 
-        ((Button) findViewById(R.id.btCancel)).setOnClickListener(new View.OnClickListener() {
+        ((ImageButton) findViewById(R.id.btCancel)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btCancelClick(v);
@@ -522,7 +523,7 @@ public class Main extends Activity {
         }
 
         findViewById(R.id.btCancel).setVisibility(View.VISIBLE);
-        ((Button) findViewById(R.id.btCancel)).setText("Annuler");
+        ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_undo);
         cancelled = false;
     }
 
@@ -646,11 +647,11 @@ public class Main extends Activity {
         }
 
         if (!cancelled){
-            ((Button) findViewById(R.id.btCancel)).setText("Refaire");
+            ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_redo);
             cancelled = true;
         }
         else {
-            ((Button) findViewById(R.id.btCancel)).setText("Annuler");
+            ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_undo);
             cancelled = false;
         }
 
@@ -740,8 +741,8 @@ public class Main extends Activity {
                         }
                     }
 
-                    ((Button) findViewById(R.id.btCancel)).setText("Annuler");
-                    ((Button) findViewById(R.id.btCancel)).setVisibility(View.GONE);
+                    ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_undo);
+                    ((ImageButton) findViewById(R.id.btCancel)).setVisibility(View.GONE);
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
                     path = getRealPathFromURI(data.getData());
@@ -763,8 +764,8 @@ public class Main extends Activity {
                         }
                     }
 
-                    ((Button) findViewById(R.id.btCancel)).setText("Annuler");
-                    ((Button) findViewById(R.id.btCancel)).setVisibility(View.GONE);
+                    ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_undo);
+                    ((ImageButton) findViewById(R.id.btCancel)).setVisibility(View.GONE);
                     break;
             }
         }
