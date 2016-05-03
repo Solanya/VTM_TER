@@ -47,14 +47,16 @@
                 android:layout_height="fill_parent"
                 android:id="@+id/menuGrid"
                 android:columnOrderPreserved="false"
-                android:useDefaultMargins="false">
+                android:useDefaultMargins="false"
+                android:layout_margin="3dp">
 
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:baselineAligned="false"
                     android:measureWithLargestChild="false"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:layout_marginBottom="2dp">
 
                     <ImageButton
                         android:id="@+id/btLoad"
@@ -65,7 +67,8 @@
                         android:background="@mipmap/ic_load"
                         android:cropToPadding="false"
                         android:adjustViewBounds="false"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="8dp" />
 
                     <ImageButton
                         android:layout_width="wrap_content"
@@ -74,7 +77,8 @@
                         android:id="@+id/btCam"
                         android:layout_column="1"
                         android:background="@mipmap/ic_cam"
-                        android:layout_gravity="center_vertical" />
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="8dp" />
 
                     <ImageButton
                         android:layout_width="wrap_content"
@@ -89,7 +93,8 @@
                 <TableRow
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1">
+                    android:layout_weight="1"
+                    android:layout_marginTop="2dp">
 
                     <ImageButton
                         android:layout_width="wrap_content"
@@ -106,116 +111,137 @@
 
         </LinearLayout>
 
-        <TableLayout
+        <LinearLayout
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/paramGrid">
+            android:id="@+id/paramLayout">
 
-            <TableRow
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:weightSum="30"
-                android:id="@+id/paramBarRow1">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="New Text"
-                    android:id="@+id/paramBarText1"
-                    android:layout_column="0"
-                    android:layout_weight="1"
-                    android:textIsSelectable="false"
-                    android:gravity="center" />
-
-                <SeekBar
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/paramBar1"
-                    android:max="255"
-                    android:indeterminate="false"
-                    android:background="#40ff0000"
-                    android:layout_column="1"
-                    android:layout_weight="29"
-                    android:layout_marginRight="5dp" />
-            </TableRow>
-
-            <TableRow
+            <TableLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/paramBarRow2">
+                android:layout_height="wrap_content"
+                android:id="@+id/paramGrid"
+                android:layout_weight="1">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="New Text"
-                    android:id="@+id/paramBarText2"
-                    android:layout_column="0"
-                    android:layout_weight="1"
-                    android:gravity="center" />
-
-                <SeekBar
+                <TableRow
                     android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/paramBar2"
-                    android:max="255"
-                    android:background="#4000ff00"
-                    android:layout_column="1"
-                    android:layout_weight="29"
-                    android:layout_marginRight="5dp" />
-            </TableRow>
+                    android:layout_height="fill_parent"
+                    android:id="@+id/paramBarRow1">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="New Text"
+                        android:id="@+id/paramBarText1"
+                        android:layout_column="0"
+                        android:layout_weight="1"
+                        android:textIsSelectable="false"
+                        android:gravity="center"
+                        android:minWidth="30dp" />
+
+                    <SeekBar
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/paramBar1"
+                        android:max="255"
+                        android:indeterminate="false"
+                        android:background="#40ff0000"
+                        android:layout_column="1"
+                        android:layout_weight="29"
+                        android:layout_marginRight="5dp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/paramBarRow2">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="New Text"
+                        android:id="@+id/paramBarText2"
+                        android:layout_column="0"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:minWidth="30dp" />
+
+                    <SeekBar
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/paramBar2"
+                        android:max="255"
+                        android:background="#4000ff00"
+                        android:layout_column="1"
+                        android:layout_weight="29"
+                        android:layout_marginRight="5dp" />
+                </TableRow>
+
+                <TableRow
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/paramBarRow3">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="New Text"
+                        android:id="@+id/paramBarText3"
+                        android:layout_column="0"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:minWidth="30dp" />
+
+                    <SeekBar
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/paramBar3"
+                        android:max="255"
+                        android:background="#400000ff"
+                        android:layout_column="1"
+                        android:layout_weight="29"
+                        android:layout_marginRight="5dp" />
+
+                </TableRow>
+
+            </TableLayout>
 
             <TableRow
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/paramBarRow3">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="New Text"
-                    android:id="@+id/paramBarText3"
-                    android:layout_column="0"
-                    android:layout_weight="1"
-                    android:gravity="center" />
-
-                <SeekBar
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/paramBar3"
-                    android:max="255"
-                    android:background="#400000ff"
-                    android:layout_column="1"
-                    android:layout_weight="29"
-                    android:layout_marginRight="5dp" />
-
-            </TableRow>
-
-            <TableRow
+                android:id="@+id/paramBtRow"
+                android:layout_marginBottom="5dp"
+                android:baselineAligned="false"
+                android:gravity="center_horizontal"
+                android:weightSum="2"
+                android:orientation="horizontal"
                 android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:id="@+id/paramBtRow">
+                android:layout_height="40dp"
+                android:layout_weight="4">
 
                 <ImageButton
                     android:id="@+id/btApply"
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:text="Apply"
                     android:layout_column="0"
-                    android:visibility="visible"
+                    android:visibility="invisible"
                     android:background="@mipmap/ic_apply"
-                    android:layout_gravity="center_vertical" />
+                    android:layout_weight="1"
+                    android:layout_gravity="center_horizontal" />
 
                 <ImageButton
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:text="Annuler"
                     android:id="@+id/btUndo"
-                    android:visibility="visible"
-                    android:background="@mipmap/ic_undo"
-                    android:layout_gravity="center_vertical" />
+                    android:visibility="invisible"
+                    android:layout_column="1"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_horizontal"
+                    android:background="@mipmap/ic_undo" />
 
             </TableRow>
-        </TableLayout>
+
+        </LinearLayout>
 
         <LinearLayout
             android:orientation="vertical"

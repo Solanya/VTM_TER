@@ -115,7 +115,7 @@ public class Main extends Activity {
         messageBox.setText("Bienvenue !");
 
         progressBox = (TextView) findViewById(R.id.progressText);
-        progressBox.setTextColor(Color.BLACK);
+        progressBox.setTextColor(Color.WHITE);
 
         displayBox = (ImageView) findViewById(R.id.imageDisplay);
 
@@ -166,7 +166,7 @@ public class Main extends Activity {
                     paramBarControl3.setProgress(paramBarValue3);
                     paramBarControl3.setMax(255);
                     paramBarControl3.setBackgroundColor(Color.parseColor("#400000ff"));
-                    paramBarControlText3.setTextColor(Color.BLUE);
+                    paramBarControlText3.setTextColor(Color.parseColor("#8888ff"));
                     paramBarControlText3.setText(Integer.toString(paramBarValue3));
 
                 } else if (which == 1) {
@@ -178,7 +178,7 @@ public class Main extends Activity {
                     paramBarControl1.setProgress(paramBarValue1);
                     paramBarControl1.setMax(5);
                     paramBarControl1.setBackgroundColor(Color.parseColor("#40000000"));
-                    paramBarControlText1.setTextColor(Color.BLACK);
+                    paramBarControlText1.setTextColor(Color.WHITE);
                     paramBarControlText1.setText(Integer.toString(paramBarValue1));
 
                     paramBarControlRow2.setVisibility(View.GONE);
@@ -357,8 +357,6 @@ public class Main extends Activity {
                     for (int i=0; i<viewTable.length; i++) {
                         viewTable[i].setLayoutParams(new TableRow.LayoutParams(viewTable[i].getMeasuredHeight(), viewTable[i].getMeasuredHeight()));
                     }
-                    viewTable[4].setVisibility(View.GONE);
-                    viewTable[5].setVisibility(View.GONE);
                     getWindow().getDecorView().getRootView().getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
             });
@@ -657,8 +655,6 @@ public class Main extends Activity {
         int pxlSize = (pixelsCurrent.length) * (pixelsCurrent[0].length);
         int[] pixelsTemp = new int[pxlSize];
 
-        System.out.println(pixelsCurrent.length);System.out.println(pixelsCurrent[0].length);
-
         for (int x=0; x<pixelsCurrent.length; x++){
             for (int y=0; y<pixelsCurrent[0].length; y++){
                 pixelsTemp[pixelsCurrent.length * y + x] = pixelsOld[x][y];
@@ -763,7 +759,7 @@ public class Main extends Activity {
                     }
 
                     ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
-                    ((ImageButton) findViewById(R.id.btUndo)).setVisibility(View.GONE);
+                    ((ImageButton) findViewById(R.id.btUndo)).setVisibility(View.INVISIBLE);
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
                     path = getRealPathFromURI(data.getData());
@@ -786,7 +782,7 @@ public class Main extends Activity {
                     }
 
                     ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
-                    ((ImageButton) findViewById(R.id.btUndo)).setVisibility(View.GONE);
+                    ((ImageButton) findViewById(R.id.btUndo)).setVisibility(View.INVISIBLE);
                     break;
             }
         }
