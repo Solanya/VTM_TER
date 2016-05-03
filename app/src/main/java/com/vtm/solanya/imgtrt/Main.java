@@ -20,13 +20,14 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewTreeObserver;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
+import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
@@ -270,10 +271,10 @@ public class Main extends Activity {
 
         // Bouton pour annuler/refaire le traitement
 
-        ((ImageButton) findViewById(R.id.btCancel)).setOnClickListener(new View.OnClickListener() {
+        ((ImageButton) findViewById(R.id.btUndo)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                btCancelClick(v);
+                btUndoClick(v);
             }
         });
 
@@ -342,6 +343,26 @@ public class Main extends Activity {
                 paramBarControlText3.setText(Integer.toString(paramBarValue3));
             }
         });
+
+        if(getWindow().getDecorView().getRootView().getViewTreeObserver().isAlive()){
+            getWindow().getDecorView().getRootView().getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    View[] viewTable = {findViewById(R.id.btLoad),
+                                        findViewById(R.id.btCam),
+                                        findViewById(R.id.btSave),
+                                        findViewById(R.id.btChoose),
+                                        findViewById(R.id.btApply),
+                                        findViewById(R.id.btUndo)};
+                    for (int i=0; i<viewTable.length; i++) {
+                        viewTable[i].setLayoutParams(new TableRow.LayoutParams(viewTable[i].getMeasuredHeight(), viewTable[i].getMeasuredHeight()));
+                    }
+                    viewTable[4].setVisibility(View.GONE);
+                    viewTable[5].setVisibility(View.GONE);
+                    getWindow().getDecorView().getRootView().getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                }
+            });
+        }
     }
 
     public boolean menuFlip(View v, MotionEvent event) {
@@ -522,8 +543,8 @@ public class Main extends Activity {
             new AsyncApplyTask().execute();
         }
 
-        findViewById(R.id.btCancel).setVisibility(View.VISIBLE);
-        ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_undo);
+        findViewById(R.id.btUndo).setVisibility(View.VISIBLE);
+        ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
         cancelled = false;
     }
 
@@ -631,7 +652,7 @@ public class Main extends Activity {
         }
     }
 
-    public void btCancelClick(View v) {
+    public void btUndoClick(View v) {
 
         int pxlSize = (pixelsCurrent.length) * (pixelsCurrent[0].length);
         int[] pixelsTemp = new int[pxlSize];
@@ -647,11 +668,11 @@ public class Main extends Activity {
         }
 
         if (!cancelled){
-            ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_redo);
+            ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_redo);
             cancelled = true;
         }
         else {
-            ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_undo);
+            ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
             cancelled = false;
         }
 
@@ -741,8 +762,8 @@ public class Main extends Activity {
                         }
                     }
 
-                    ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_undo);
-                    ((ImageButton) findViewById(R.id.btCancel)).setVisibility(View.GONE);
+                    ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
+                    ((ImageButton) findViewById(R.id.btUndo)).setVisibility(View.GONE);
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
                     path = getRealPathFromURI(data.getData());
@@ -764,8 +785,8 @@ public class Main extends Activity {
                         }
                     }
 
-                    ((ImageButton) findViewById(R.id.btCancel)).setBackgroundResource(R.mipmap.ic_undo);
-                    ((ImageButton) findViewById(R.id.btCancel)).setVisibility(View.GONE);
+                    ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
+                    ((ImageButton) findViewById(R.id.btUndo)).setVisibility(View.GONE);
                     break;
             }
         }
