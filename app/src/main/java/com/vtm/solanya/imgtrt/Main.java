@@ -111,7 +111,7 @@ public class Main extends Activity {
         setContentView(R.layout.activity_main);
 
         messageBox = (TextView) findViewById(R.id.textBox);
-        messageBox.setTextColor(Color.BLACK);
+        messageBox.setTextColor(Color.WHITE);
         messageBox.setText("Bienvenue !");
 
         progressBox = (TextView) findViewById(R.id.progressText);
