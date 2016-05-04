@@ -814,4 +814,20 @@ public class Main extends Activity {
         }
         return result;
     }
+
+    @Override
+    public void onBackPressed(){
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Quitter")
+                .setMessage("Êtes-vous sûr de vouloir quitter l'application ?")
+                .setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                })
+                .setNegativeButton("Non",null)
+                .show();
+    }
 }
