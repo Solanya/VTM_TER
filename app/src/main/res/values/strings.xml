@@ -11,10 +11,10 @@
     <string name="saveError">Erreur durant la sauvegarde.</string>
     <string name="saveSuccess">Sauvegarde effectuée.</string>
     <string name="valueChangeTitle">Changer la valeur du paramètre</string>
-    <string name="valueWarning">La valeur doit être choisie entre 0 et %1$i</string>
-    <string name="valueError">Erreur : la valeur doit être choisie entre 0 et %1$i</string>
+    <string name="valueWarning">La valeur doit être choisie entre 0 et %1$d</string>
+    <string name="valueError">Erreur : la valeur doit être choisie entre 0 et %1$d</string>
     <string name="valueSuccess">Valeur du paramètre modifiée.</string>
-    <string name="imageEmpty">Pas d'image.</string>
+    <string name="imageEmpty">Pas d\'image.</string>
     <string name="emptyProcess">Pas de traitement sélectionné.</string>
     <string name="applyingProcess">%1$s en cours...</string>
     <string name="processChooserTitle">Choix de traitements</string>

@@ -75,7 +75,6 @@ public class Main extends Activity {
     public int xDelta;
 
     public int imageProcess = R.string.emptyProcess;
-    public CharSequence processes[] = new CharSequence[] {getResources().getString(R.string.processSeuil), getResources().getString(R.string.processFlou)};
     public AlertDialog.Builder processChooser;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
@@ -136,6 +135,7 @@ public class Main extends Activity {
 
         processChooser = new AlertDialog.Builder(this);
         processChooser.setTitle(R.string.processChooserTitle);
+        CharSequence processes[] = new CharSequence[] {this.getString(R.string.processSeuil), this.getString(R.string.processFlou)};
         processChooser.setItems(processes, new DialogInterface.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
@@ -187,7 +187,7 @@ public class Main extends Activity {
                 }
 
                 findViewById(R.id.btApply).setVisibility(View.VISIBLE);
-                messageBox.setText(String.format(getResources().getString(R.string.choice), getResources().getString(imageProcess)));
+                messageBox.setText(String.format(getString(R.string.choice), getString(imageProcess)));
                 ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
             }
         });
@@ -538,7 +538,7 @@ public class Main extends Activity {
                 System.arraycopy(pixelsCurrent[x],0,pixelsOld[x],0,imageHeight);
             }
 
-            progressBox.setText(String.format(getResources().getString(R.string.applyingProcess), getResources().getString(imageProcess)));
+            progressBox.setText(String.format(getString(R.string.applyingProcess), getString(imageProcess)));
             progressCount = 0;
             progressBarControl.setProgress(0);
             progressBarControl.setMax(imageHeight * imageWidth);
@@ -694,16 +694,16 @@ public class Main extends Activity {
         final LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
-        final TextView error = new TextView(this);
-        error.setText(String.format(getResources().getString(R.string.valueWarning), paramBarControl1.getMax()));
-        error.setGravity(Gravity.CENTER);
-        error.setVisibility(View.VISIBLE);
-        error.setTextColor(Color.WHITE);
+        final TextView warning = new TextView(this);
+        warning.setText(String.format(getString(R.string.valueWarning), paramBarControl1.getMax()));
+        warning.setGravity(Gravity.CENTER);
+        warning.setVisibility(View.VISIBLE);
+        warning.setTextColor(Color.WHITE);
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-        layout.addView(error);
+        layout.addView(warning);
         layout.addView(input);
         builder.setView(layout);
 
@@ -719,7 +719,7 @@ public class Main extends Activity {
                     paramBarControl1.setProgress(m_int);
                     messageBox.setText(R.string.valueSuccess);
                 } else {
-                    error.setText(String.format(getResources().getString(R.string.valueError), paramBarControl1.getMax()));
+                    messageBox.setText(String.format(getString(R.string.valueError), paramBarControl1.getMax()));
                 }
             }
         });
@@ -741,16 +741,16 @@ public class Main extends Activity {
         final LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
-        final TextView error = new TextView(this);
-        error.setText(String.format(getResources().getString(R.string.valueWarning), paramBarControl2.getMax()));
-        error.setGravity(Gravity.CENTER);
-        error.setVisibility(View.VISIBLE);
-        error.setTextColor(Color.WHITE);
+        final TextView warning = new TextView(this);
+        warning.setText(String.format(getString(R.string.valueWarning), paramBarControl2.getMax()));
+        warning.setGravity(Gravity.CENTER);
+        warning.setVisibility(View.VISIBLE);
+        warning.setTextColor(Color.WHITE);
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-        layout.addView(error);
+        layout.addView(warning);
         layout.addView(input);
         builder.setView(layout);
 
@@ -766,7 +766,7 @@ public class Main extends Activity {
                     paramBarControl2.setProgress(m_int);
                     messageBox.setText(R.string.valueSuccess);
                 } else {
-                    messageBox.setText(String.format(getResources().getString(R.string.valueError), paramBarControl2.getMax()));
+                    messageBox.setText(String.format(getString(R.string.valueError), paramBarControl2.getMax()));
                 }
             }
         });
@@ -788,16 +788,16 @@ public class Main extends Activity {
         final LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
-        final TextView error = new TextView(this);
-        error.setText(String.format(getResources().getString(R.string.valueWarning), paramBarControl3.getMax()));
-        error.setGravity(Gravity.CENTER);
-        error.setVisibility(View.VISIBLE);
-        error.setTextColor(Color.WHITE);
+        final TextView warning = new TextView(this);
+        warning.setText(String.format(getString(R.string.valueWarning), paramBarControl3.getMax()));
+        warning.setGravity(Gravity.CENTER);
+        warning.setVisibility(View.VISIBLE);
+        warning.setTextColor(Color.WHITE);
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
 
-        layout.addView(error);
+        layout.addView(warning);
         layout.addView(input);
         builder.setView(layout);
 
@@ -813,7 +813,7 @@ public class Main extends Activity {
                     paramBarControl3.setProgress(m_int);
                     messageBox.setText(R.string.valueSuccess);
                 } else {
-                    messageBox.setText(String.format(getResources().getString(R.string.valueError), paramBarControl3.getMax()));
+                    messageBox.setText(String.format(getString(R.string.valueError), paramBarControl3.getMax()));
                 }
             }
         });
@@ -917,7 +917,7 @@ public class Main extends Activity {
                         finish();
                     }
                 })
-                .setNegativeButton(R.string.exitNo,null)
+                .setNegativeButton(R.string.exitNo, null)
                 .show();
     }
 }
