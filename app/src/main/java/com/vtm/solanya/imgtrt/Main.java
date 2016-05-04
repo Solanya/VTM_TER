@@ -39,12 +39,15 @@ public class Main extends Activity {
     //constante pour définir l'id du type image
 
     final static int SELECT_PICTURE = 1;
+    final static int SELECT_REFERENCE_PICTURE = 2;
 
     public TextView messageBox = null;
     public TextView progressBox = null;
     public ImageView displayBox = null;
     public int imageWidth;
     public int imageHeight;
+    public int referenceWidth;
+    public int referenceHeight;
 
     public int progressCount = 0;
 
@@ -53,6 +56,7 @@ public class Main extends Activity {
     public TableRow paramBarControlRow1 = null;
     public TableRow paramBarControlRow2 = null;
     public TableRow paramBarControlRow3 = null;
+    public TableRow paramImgControlRow = null;
 
     public SeekBar paramBarControl1 = null;
     public SeekBar paramBarControl2 = null;
@@ -61,10 +65,12 @@ public class Main extends Activity {
     public TextView paramBarControlText1 = null;
     public TextView paramBarControlText2 = null;
     public TextView paramBarControlText3 = null;
+    public TextView paramImgControlText = null;
 
     public int paramBarValue1 = 0;
     public int paramBarValue2 = 0;
     public int paramBarValue3 = 0;
+    public int[][] pixelsReference;
 
     public boolean cancelled = false;
     public int[][] pixelsCurrent;
@@ -121,9 +127,11 @@ public class Main extends Activity {
         paramBarControlRow1 = (TableRow) findViewById(R.id.paramBarRow1);
         paramBarControlRow2 = (TableRow) findViewById(R.id.paramBarRow2);
         paramBarControlRow3 = (TableRow) findViewById(R.id.paramBarRow3);
+        paramImgControlRow = (TableRow) findViewById(R.id.paramImgRow);
         paramBarControlRow1.setVisibility(View.GONE);
         paramBarControlRow2.setVisibility(View.GONE);
         paramBarControlRow3.setVisibility(View.GONE);
+        paramImgControlRow.setVisibility(View.GONE);
 
         paramBarControl1 = (SeekBar) findViewById(R.id.paramBar1);
         paramBarControl2 = (SeekBar) findViewById(R.id.paramBar2);
@@ -132,10 +140,11 @@ public class Main extends Activity {
         paramBarControlText1 = (TextView) findViewById(R.id.paramBarText1);
         paramBarControlText2 = (TextView) findViewById(R.id.paramBarText2);
         paramBarControlText3 = (TextView) findViewById(R.id.paramBarText3);
+        paramImgControlText = (TextView) findViewById(R.id.paramImgText);
 
         processChooser = new AlertDialog.Builder(this);
         processChooser.setTitle(R.string.processChooserTitle);
-        CharSequence processes[] = new CharSequence[] {this.getString(R.string.processSeuil), this.getString(R.string.processFlou)};
+        CharSequence processes[] = new CharSequence[] {this.getString(R.string.processSeuil), this.getString(R.string.processFlou), this.getString(R.string.processTest)};
         processChooser.setItems(processes, new DialogInterface.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
@@ -184,6 +193,11 @@ public class Main extends Activity {
 
                     paramBarControlRow3.setVisibility(View.GONE);
 
+                } else if (which == 2) {
+                    imageProcess = R.string.processTest;
+                    paramImgControlRow.setVisibility(View.VISIBLE);
+                    paramImgControlText.setTextColor(Color.WHITE);
+                    paramImgControlText.setText(R.string.imageReferenceEmpty);
                 }
 
                 findViewById(R.id.btApply).setVisibility(View.VISIBLE);
@@ -254,6 +268,15 @@ public class Main extends Activity {
             @Override
             public void onClick(View v) {
                 btUndoClick(v);
+            }
+        });
+
+        // Bouton de choix d'une image de référence
+
+        findViewById(R.id.btReference).setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                btReferenceClick(v);
             }
         });
 
@@ -686,6 +709,14 @@ public class Main extends Activity {
         displayBox.setImageBitmap(bitmapNew);
     }
 
+    public void btReferenceClick(View v) {
+        //Création puis ouverture de la boite de dialogue
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, ""), SELECT_REFERENCE_PICTURE);
+    }
+
     public void changeParamBar1(View v){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -857,6 +888,29 @@ public class Main extends Activity {
 
                     findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
                     findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+                    break;
+                case SELECT_REFERENCE_PICTURE:
+                    path = getRealPathFromURI(data.getData());
+                    Log.d("Choose Ref Picture", path);
+                    //Transformer la photo en Bitmap
+                    bitmap = BitmapFactory.decodeFile(path);
+                    referenceWidth = bitmap.getWidth();
+                    referenceHeight = bitmap.getHeight();
+
+                    pixelsReference = new int[referenceWidth][referenceHeight];
+
+                    //TODO : Histogram here ?
+
+                    for (int x = 0; x < referenceWidth; x++) {
+                        for (int y = 0; y < referenceHeight; y++) {
+                            pixelsReference[x][y] = bitmap.getPixel(x, y);
+                        }
+                    }
+
+                    String[] pathSplit = path.split("/");
+
+                    paramImgControlText.setText(pathSplit[pathSplit.length-1]);
+
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
                     path = getRealPathFromURI(data.getData());

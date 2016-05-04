@@ -15,10 +15,12 @@
     <string name="valueError">Erreur : la valeur doit être choisie entre 0 et %1$d</string>
     <string name="valueSuccess">Valeur du paramètre modifiée.</string>
     <string name="imageEmpty">Pas d\'image.</string>
+    <string name="imageReferenceEmpty">Pas d\'image de référence.</string>
     <string name="emptyProcess">Pas de traitement sélectionné.</string>
     <string name="applyingProcess">%1$s en cours...</string>
     <string name="processChooserTitle">Choix de traitements</string>
     <string name="processSeuil">Seuil</string>
     <string name="processFlou">Flou</string>
+    <string name="processTest">Test</string>
     <string name="settings">Paramètres</string>
 </resources>
