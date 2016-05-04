@@ -17,7 +17,7 @@
     <string name="imageEmpty">Pas d\'image.</string>
     <string name="imageReferenceEmpty">Pas d\'image de référence.</string>
     <string name="emptyProcess">Pas de traitement sélectionné.</string>
-    <string name="applyingProcess">%1$s en cours...</string>
+    <string name="applyingProcess">%1$s en cours…</string>
     <string name="processChooserTitle">Choix de traitements</string>
     <string name="processSeuil">Seuil</string>
     <string name="processFlou">Flou</string>

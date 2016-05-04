@@ -57,20 +57,24 @@ public class Main extends Activity {
     public TableRow paramBarControlRow2 = null;
     public TableRow paramBarControlRow3 = null;
     public TableRow paramImgControlRow = null;
+    public TableRow paramInputControlRow = null;
 
     public SeekBar paramBarControl1 = null;
     public SeekBar paramBarControl2 = null;
     public SeekBar paramBarControl3 = null;
+    public EditText paramInputControl = null;
 
     public TextView paramBarControlText1 = null;
     public TextView paramBarControlText2 = null;
     public TextView paramBarControlText3 = null;
     public TextView paramImgControlText = null;
+    public TextView paramInputControlText = null;
 
     public int paramBarValue1 = 0;
     public int paramBarValue2 = 0;
     public int paramBarValue3 = 0;
     public int[][] pixelsReference;
+    public String paramInputValue;
 
     public boolean cancelled = false;
     public int[][] pixelsCurrent;
@@ -128,19 +132,23 @@ public class Main extends Activity {
         paramBarControlRow2 = (TableRow) findViewById(R.id.paramBarRow2);
         paramBarControlRow3 = (TableRow) findViewById(R.id.paramBarRow3);
         paramImgControlRow = (TableRow) findViewById(R.id.paramImgRow);
+        paramInputControlRow = (TableRow) findViewById(R.id.paramInputRow);
         paramBarControlRow1.setVisibility(View.GONE);
         paramBarControlRow2.setVisibility(View.GONE);
         paramBarControlRow3.setVisibility(View.GONE);
         paramImgControlRow.setVisibility(View.GONE);
+        paramInputControlRow.setVisibility(View.GONE);
 
         paramBarControl1 = (SeekBar) findViewById(R.id.paramBar1);
         paramBarControl2 = (SeekBar) findViewById(R.id.paramBar2);
         paramBarControl3 = (SeekBar) findViewById(R.id.paramBar3);
+        paramInputControl = (EditText) findViewById(R.id.paramInput);
 
         paramBarControlText1 = (TextView) findViewById(R.id.paramBarText1);
         paramBarControlText2 = (TextView) findViewById(R.id.paramBarText2);
         paramBarControlText3 = (TextView) findViewById(R.id.paramBarText3);
         paramImgControlText = (TextView) findViewById(R.id.paramImgText);
+        paramInputControlText = (TextView) findViewById(R.id.paramInputText);
 
         processChooser = new AlertDialog.Builder(this);
         processChooser.setTitle(R.string.processChooserTitle);
@@ -198,6 +206,11 @@ public class Main extends Activity {
                     paramImgControlRow.setVisibility(View.VISIBLE);
                     paramImgControlText.setTextColor(Color.WHITE);
                     paramImgControlText.setText(R.string.imageReferenceEmpty);
+
+                    paramInputControl.setText("");
+                    paramInputControl.setTextColor(Color.LTGRAY);
+                    paramInputControlRow.setVisibility(View.VISIBLE);
+                    paramInputControlText.setTextColor(Color.WHITE);
                 }
 
                 findViewById(R.id.btApply).setVisibility(View.VISIBLE);
@@ -856,6 +869,11 @@ public class Main extends Activity {
         });
 
         builder.show();
+    }
+
+    public String getParamInputValue(){
+        paramInputValue = (paramInputControl.getText().toString());
+        return paramInputValue;
     }
 
 
