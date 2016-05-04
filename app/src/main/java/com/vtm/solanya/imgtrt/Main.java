@@ -1,5 +1,6 @@
 package com.vtm.solanya.imgtrt;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -22,12 +23,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
-import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
@@ -75,12 +74,11 @@ public class Main extends Activity {
 
     public int xDelta;
 
-    public CharSequence imageProcess = "";
-    public CharSequence processes[] = new CharSequence[] {"Seuil", "Flou" , "Dilatation", "Erosion"};
+    public int imageProcess = R.string.emptyProcess;
+    public CharSequence processes[] = new CharSequence[] {getResources().getString(R.string.processSeuil), getResources().getString(R.string.processFlou)};
     public AlertDialog.Builder processChooser;
 
     public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
-    public Uri fileUri;
 
     // TODO : Add file permissions to save images for Android 6.0+
     /*public  boolean isStoragePermissionGranted() {
@@ -112,7 +110,7 @@ public class Main extends Activity {
 
         messageBox = (TextView) findViewById(R.id.textBox);
         messageBox.setTextColor(Color.WHITE);
-        messageBox.setText("Bienvenue !");
+        messageBox.setText(R.string.welcome);
 
         progressBox = (TextView) findViewById(R.id.progressText);
         progressBox.setTextColor(Color.WHITE);
@@ -137,13 +135,14 @@ public class Main extends Activity {
         paramBarControlText3 = (TextView) findViewById(R.id.paramBarText3);
 
         processChooser = new AlertDialog.Builder(this);
-        processChooser.setTitle("Traitements");
+        processChooser.setTitle(R.string.processChooserTitle);
         processChooser.setItems(processes, new DialogInterface.OnClickListener() {
+            @SuppressLint("SetTextI18n")
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == 0) {
 
-                    imageProcess = "Seuil";
+                    imageProcess = R.string.processSeuil;
                     paramBarValue1 = 0;
                     paramBarValue2 = 0;
                     paramBarValue3 = 0;
@@ -171,7 +170,7 @@ public class Main extends Activity {
 
                 } else if (which == 1) {
 
-                    imageProcess = "Flou";
+                    imageProcess = R.string.processFlou;
                     paramBarValue1 = 0;
 
                     paramBarControlRow1.setVisibility(View.VISIBLE);
@@ -185,30 +184,10 @@ public class Main extends Activity {
 
                     paramBarControlRow3.setVisibility(View.GONE);
 
-                } else if (which == 2) {
-
-                    imageProcess = "Dilatation";
-
-                    paramBarControlRow1.setVisibility(View.GONE);
-
-                    paramBarControlRow2.setVisibility(View.GONE);
-
-                    paramBarControlRow3.setVisibility(View.GONE);
-
-                } else if (which == 3) {
-
-                    imageProcess = "Erosion";
-
-                    paramBarControlRow1.setVisibility(View.GONE);
-
-                    paramBarControlRow2.setVisibility(View.GONE);
-
-                    paramBarControlRow3.setVisibility(View.GONE);
-
                 }
 
-                ((ImageButton) findViewById(R.id.btApply)).setVisibility(View.VISIBLE);
-                messageBox.setText("Choix : " + imageProcess);
+                findViewById(R.id.btApply).setVisibility(View.VISIBLE);
+                messageBox.setText(String.format(getResources().getString(R.string.choice), getResources().getString(imageProcess)));
                 ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
             }
         });
@@ -217,16 +196,16 @@ public class Main extends Activity {
         ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
         ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_right);
         ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
-        ((ViewFlipper) findViewById(R.id.menuFlipper)).setOnTouchListener(new View.OnTouchListener() {
+        findViewById(R.id.menuFlipper).setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View v, MotionEvent event) {
-                return menuFlip(v, event);
+                return menuFlip(event);
             }
         });
 
 
         // Bouton de chargement depuis la gallerie
 
-        ((ImageButton) findViewById(R.id.btLoad)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btLoad).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btLoadClick(v);
@@ -235,7 +214,7 @@ public class Main extends Activity {
 
         // Bouton d'appel de l'appareil photo
 
-        ((ImageButton) findViewById(R.id.btCam)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btCam).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btCamClick(v);
@@ -244,16 +223,16 @@ public class Main extends Activity {
 
         // Bouton de sauvegarde de l'image
 
-        ((ImageButton) findViewById(R.id.btSave)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btSave).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                btSaveClick(v);
+                btSaveClick();
             }
         });
 
         // Bouton pour choisir le traitement
 
-        ((ImageButton) findViewById(R.id.btChoose)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btChoose).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btChooseClick(v);
@@ -262,7 +241,7 @@ public class Main extends Activity {
 
         // Bouton pour appliquer le traitement
 
-        ((ImageButton) findViewById(R.id.btApply)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btApply).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btApplyClick(v);
@@ -271,7 +250,7 @@ public class Main extends Activity {
 
         // Bouton pour annuler/refaire le traitement
 
-        ((ImageButton) findViewById(R.id.btUndo)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btUndo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btUndoClick(v);
@@ -280,21 +259,21 @@ public class Main extends Activity {
 
         // Réglage direct des paramètres
 
-        ((TextView) findViewById(R.id.paramBarText1)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.paramBarText1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 changeParamBar1(v);
             }
         });
 
-        ((TextView) findViewById(R.id.paramBarText2)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.paramBarText2).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 changeParamBar2(v);
             }
         });
 
-        ((TextView) findViewById(R.id.paramBarText3)).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.paramBarText3).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 changeParamBar3(v);
@@ -316,6 +295,7 @@ public class Main extends Activity {
 
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 paramBarControlText1.setText(Integer.toString(paramBarValue1));
@@ -334,6 +314,7 @@ public class Main extends Activity {
 
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 paramBarControlText2.setText(Integer.toString(paramBarValue2));
@@ -352,6 +333,7 @@ public class Main extends Activity {
 
             }
 
+            @SuppressLint("SetTextI18n")
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 paramBarControlText3.setText(Integer.toString(paramBarValue3));
@@ -368,16 +350,17 @@ public class Main extends Activity {
                                         findViewById(R.id.btChoose),
                                         findViewById(R.id.btApply),
                                         findViewById(R.id.btUndo)};
-                    for (int i=0; i<viewTable.length; i++) {
-                        viewTable[i].setLayoutParams(new TableRow.LayoutParams(viewTable[i].getMeasuredHeight(), viewTable[i].getMeasuredHeight()));
+                    for (View v:viewTable) {
+                        v.setLayoutParams(new TableRow.LayoutParams(v.getMeasuredHeight(), v.getMeasuredHeight()));
                     }
+
                     getWindow().getDecorView().getRootView().getViewTreeObserver().removeGlobalOnLayoutListener(this);
                 }
             });
         }
     }
 
-    public boolean menuFlip(View v, MotionEvent event) {
+    public boolean menuFlip(MotionEvent event) {
         final int X = (int) event.getRawX();
         switch (event.getAction() & MotionEvent.ACTION_MASK){
             case MotionEvent.ACTION_DOWN:
@@ -395,8 +378,8 @@ public class Main extends Activity {
                     ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this,R.anim.slide_in_from_right);
                     ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
                     ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
-                    if (imageProcess == ""){
-                        messageBox.setText("Pas de traitement sélectionné.");
+                    if (imageProcess == R.string.emptyProcess){
+                        messageBox.setText(R.string.emptyProcess);
                     }
                 }
                 else if (((ViewFlipper) findViewById(R.id.menuFlipper)).getDisplayedChild() != 0
@@ -410,11 +393,6 @@ public class Main extends Activity {
         return true;
     }
 
-    /**
-     * Evenement du click bouton
-     *
-     * @param v
-     */
     public void btLoadClick(View v) {
         //Création puis ouverture de la boite de dialogue
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -428,9 +406,9 @@ public class Main extends Activity {
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
-    public boolean btSaveClick(View v) {
-        String fullPath = "";
-        OutputStream fOut = null;
+    public boolean btSaveClick() {
+        String fullPath;
+        OutputStream fOut;
         File file;
 
         try {
@@ -438,34 +416,50 @@ public class Main extends Activity {
 
             File dir = new File(fullPath);
             if (!dir.exists()) {
-                dir.mkdirs();
+                boolean checkDirCreation = dir.mkdirs();
+                if (!checkDirCreation){
+                    messageBox.setText(R.string.saveError);
+                    return false;
+                }
             }
 
             file = new File(fullPath, "image.png");
-            file.createNewFile();
+            boolean checkFileCreation = file.createNewFile();
+            if (!checkFileCreation){
+                messageBox.setText(R.string.saveError);
+                return false;
+            }
             fOut = new FileOutputStream(file);
         } catch (Exception e) {
             fullPath = getFilesDir().getAbsolutePath() + "/Saved Images";
 
             File dir = new File(fullPath);
             if (!dir.exists()) {
-                dir.mkdirs();
+                boolean checkDirCreation = dir.mkdirs();
+                if (!checkDirCreation){
+                    messageBox.setText(R.string.saveError);
+                    return false;
+                }
             }
 
             file = new File(fullPath, "image.png");
             try {
-                file.createNewFile();
+                boolean checkFileCreation = file.createNewFile();
+                if (!checkFileCreation){
+                    messageBox.setText(R.string.saveError);
+                    return false;
+                }
                 fOut = new FileOutputStream(file);
             } catch (Exception e2) {
                 Log.e("Save Image", e.getMessage());
-                messageBox.setText("Error saving.");
+                messageBox.setText(R.string.saveError);
                 return false;
             }
         }
 
         try {
             if (displayBox.getDrawable() == null) {
-                messageBox.setText("No image.");
+                messageBox.setText(R.string.imageEmpty);
 
                 return false;
             }
@@ -480,14 +474,14 @@ public class Main extends Activity {
 
             MediaStore.Images.Media.insertImage(this.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
 
-            messageBox.setText("Image saved.");
+            messageBox.setText(R.string.saveSuccess);
 
             return true;
 
 
         } catch (Exception e) {
             Log.e("Save Image", e.getMessage());
-            messageBox.setText("Error saving.");
+            messageBox.setText(R.string.saveError);
             return false;
         }
     }
@@ -502,10 +496,10 @@ public class Main extends Activity {
     {
         @Override
         protected Void doInBackground(Void... params) {
-            if (imageProcess == "Seuil") {
+            if (imageProcess == R.string.processSeuil) {
                 applySeuil();
             }
-            else if (imageProcess == "Flou") {
+            else if (imageProcess == R.string.processFlou) {
                 applyFlou();
             }
             return null;
@@ -520,14 +514,14 @@ public class Main extends Activity {
 
     public void btApplyClick(View v) {
 
-        if (imageProcess == ""){
-            messageBox.setText("Aucun traitement sélectionné.");
+        if (imageProcess == R.string.emptyProcess){
+            messageBox.setText(R.string.emptyProcess);
 
             return;
         }
         else{
             if (displayBox.getDrawable() == null) {
-                messageBox.setText("No image.");
+                messageBox.setText(R.string.imageEmpty);
 
                 return;
             }
@@ -536,13 +530,15 @@ public class Main extends Activity {
             Bitmap bitmapCurrent = bitmapDrawable.getBitmap();
             bitmapConfig = bitmapCurrent.getConfig();
 
+
             for (int x=0; x<imageWidth; x++){
-                for (int y=0; y<imageHeight; y++){
+                /*for (int y=0; y<imageHeight; y++){
                     pixelsOld[x][y] = pixelsCurrent[x][y];
-                }
+                }*/
+                System.arraycopy(pixelsCurrent[x],0,pixelsOld[x],0,imageHeight);
             }
 
-            progressBox.setText(imageProcess + " en cours...");
+            progressBox.setText(String.format(getResources().getString(R.string.applyingProcess), getResources().getString(imageProcess)));
             progressCount = 0;
             progressBarControl.setProgress(0);
             progressBarControl.setMax(imageHeight * imageWidth);
@@ -556,7 +552,7 @@ public class Main extends Activity {
         }
 
         findViewById(R.id.btUndo).setVisibility(View.VISIBLE);
-        ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
+        findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
         cancelled = false;
     }
 
@@ -678,11 +674,11 @@ public class Main extends Activity {
         }
 
         if (!cancelled){
-            ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_redo);
+            findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_redo);
             cancelled = true;
         }
         else {
-            ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
+            findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
             cancelled = false;
         }
 
@@ -693,19 +689,19 @@ public class Main extends Activity {
     public void changeParamBar1(View v){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Change value");
+        builder.setTitle(R.string.valueChangeTitle);
 
         final LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
         final TextView error = new TextView(this);
-        error.setText("Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
+        error.setText(String.format(getResources().getString(R.string.valueWarning), paramBarControl1.getMax()));
         error.setGravity(Gravity.CENTER);
         error.setVisibility(View.VISIBLE);
         error.setTextColor(Color.WHITE);
 
         final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         layout.addView(error);
         layout.addView(input);
@@ -721,9 +717,9 @@ public class Main extends Activity {
                     paramBarControlText1.setText(m_Text);
                     paramBarValue1 = m_int;
                     paramBarControl1.setProgress(m_int);
-                    messageBox.setText("Value changed.");
+                    messageBox.setText(R.string.valueSuccess);
                 } else {
-                    messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
+                    error.setText(String.format(getResources().getString(R.string.valueError), paramBarControl1.getMax()));
                 }
             }
         });
@@ -740,19 +736,19 @@ public class Main extends Activity {
     public void changeParamBar2(View v){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Change value");
+        builder.setTitle(R.string.valueChangeTitle);
 
         final LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
         final TextView error = new TextView(this);
-        error.setText("Value must be between 0 and " + Integer.toString(paramBarControl2.getMax()));
+        error.setText(String.format(getResources().getString(R.string.valueWarning), paramBarControl2.getMax()));
         error.setGravity(Gravity.CENTER);
         error.setVisibility(View.VISIBLE);
         error.setTextColor(Color.WHITE);
 
         final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         layout.addView(error);
         layout.addView(input);
@@ -768,9 +764,9 @@ public class Main extends Activity {
                     paramBarControlText2.setText(m_Text);
                     paramBarValue2 = m_int;
                     paramBarControl2.setProgress(m_int);
-                    messageBox.setText("Value changed.");
+                    messageBox.setText(R.string.valueSuccess);
                 } else {
-                    messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl2.getMax()));
+                    messageBox.setText(String.format(getResources().getString(R.string.valueError), paramBarControl2.getMax()));
                 }
             }
         });
@@ -787,19 +783,19 @@ public class Main extends Activity {
     public void changeParamBar3(View v){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Change value");
+        builder.setTitle(R.string.valueChangeTitle);
 
         final LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
         final TextView error = new TextView(this);
-        error.setText("Value must be between 0 and " + Integer.toString(paramBarControl3.getMax()));
+        error.setText(String.format(getResources().getString(R.string.valueWarning), paramBarControl3.getMax()));
         error.setGravity(Gravity.CENTER);
         error.setVisibility(View.VISIBLE);
         error.setTextColor(Color.WHITE);
 
         final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
 
         layout.addView(error);
         layout.addView(input);
@@ -815,9 +811,9 @@ public class Main extends Activity {
                     paramBarControlText3.setText(m_Text);
                     paramBarValue3 = m_int;
                     paramBarControl3.setProgress(m_int);
-                    messageBox.setText("Value changed.");
+                    messageBox.setText(R.string.valueSuccess);
                 } else {
-                    messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl3.getMax()));
+                    messageBox.setText(String.format(getResources().getString(R.string.valueError), paramBarControl3.getMax()));
                 }
             }
         });
@@ -832,13 +828,6 @@ public class Main extends Activity {
     }
 
 
-    /**
-     * Retour de la boite de dialogue
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -866,8 +855,8 @@ public class Main extends Activity {
                         }
                     }
 
-                    ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
-                    ((ImageButton) findViewById(R.id.btUndo)).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
+                    findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
                     path = getRealPathFromURI(data.getData());
@@ -889,26 +878,19 @@ public class Main extends Activity {
                         }
                     }
 
-                    ((ImageButton) findViewById(R.id.btUndo)).setBackgroundResource(R.mipmap.ic_undo);
-                    ((ImageButton) findViewById(R.id.btUndo)).setVisibility(View.INVISIBLE);
+                    findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
+                    findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
                     break;
             }
         }
         else if (resultCode == RESULT_CANCELED) {
-            messageBox.setText("Cancelled.");
+            messageBox.setText(R.string.camCancelled);
         } else {
-            messageBox.setText("Error taking the picture.");
+            messageBox.setText(R.string.camError);
         }
 
     }
 
-    /**
-     * Obtenir le chemin vers une ressource
-     * la fonction a été trouvé sur Stackoverflow
-     *
-     * @param contentURI
-     * @return
-     */
     private String getRealPathFromURI(Uri contentURI) {
         String result;
         Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
@@ -927,15 +909,15 @@ public class Main extends Activity {
     public void onBackPressed(){
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Quitter")
-                .setMessage("Êtes-vous sûr de vouloir quitter l'application ?")
-                .setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                .setTitle(R.string.exitTitle)
+                .setMessage(R.string.exitMessage)
+                .setPositiveButton(R.string.exitYes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         finish();
                     }
                 })
-                .setNegativeButton("Non",null)
+                .setNegativeButton(R.string.exitNo,null)
                 .show();
     }
 }
