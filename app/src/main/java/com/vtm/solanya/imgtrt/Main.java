@@ -287,6 +287,20 @@ public class Main extends Activity {
             }
         });
 
+        ((TextView) findViewById(R.id.paramBarText2)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeParamBar2(v);
+            }
+        });
+
+        ((TextView) findViewById(R.id.paramBarText3)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeParamBar3(v);
+            }
+        });
+
         // Sliders de contrôle de seuil
 
 
@@ -710,6 +724,100 @@ public class Main extends Activity {
                     messageBox.setText("Value changed.");
                 } else {
                     messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl1.getMax()));
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public void changeParamBar2(View v){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Change value");
+
+        final LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        final TextView error = new TextView(this);
+        error.setText("Value must be between 0 and " + Integer.toString(paramBarControl2.getMax()));
+        error.setGravity(Gravity.CENTER);
+        error.setVisibility(View.VISIBLE);
+        error.setTextColor(Color.WHITE);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+
+        layout.addView(error);
+        layout.addView(input);
+        builder.setView(layout);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String m_Text = input.getText().toString();
+                int m_int = Integer.parseInt(m_Text);
+
+                if (m_int <= paramBarControl2.getMax()) {
+                    paramBarControlText2.setText(m_Text);
+                    paramBarValue2 = m_int;
+                    paramBarControl2.setProgress(m_int);
+                    messageBox.setText("Value changed.");
+                } else {
+                    messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl2.getMax()));
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public void changeParamBar3(View v){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Change value");
+
+        final LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        final TextView error = new TextView(this);
+        error.setText("Value must be between 0 and " + Integer.toString(paramBarControl3.getMax()));
+        error.setGravity(Gravity.CENTER);
+        error.setVisibility(View.VISIBLE);
+        error.setTextColor(Color.WHITE);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+
+        layout.addView(error);
+        layout.addView(input);
+        builder.setView(layout);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String m_Text = input.getText().toString();
+                int m_int = Integer.parseInt(m_Text);
+
+                if (m_int <= paramBarControl3.getMax()) {
+                    paramBarControlText3.setText(m_Text);
+                    paramBarValue3 = m_int;
+                    paramBarControl3.setProgress(m_int);
+                    messageBox.setText("Value changed.");
+                } else {
+                    messageBox.setText("Error : Value must be between 0 and " + Integer.toString(paramBarControl3.getMax()));
                 }
             }
         });
