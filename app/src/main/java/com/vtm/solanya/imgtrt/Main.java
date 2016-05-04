@@ -23,6 +23,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -39,7 +40,8 @@ public class Main extends Activity {
     //constante pour définir l'id du type image
 
     final static int SELECT_PICTURE = 1;
-    final static int SELECT_REFERENCE_PICTURE = 2;
+    final static int SELECT_REFERENCE_PICTURE = 10;
+    final static int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
 
     public TextView messageBox = null;
     public TextView progressBox = null;
@@ -58,6 +60,7 @@ public class Main extends Activity {
     public TableRow paramBarControlRow3 = null;
     public TableRow paramImgControlRow = null;
     public TableRow paramInputControlRow = null;
+    public TableRow paramMatrixControlRow = null;
 
     public SeekBar paramBarControl1 = null;
     public SeekBar paramBarControl2 = null;
@@ -69,12 +72,16 @@ public class Main extends Activity {
     public TextView paramBarControlText3 = null;
     public TextView paramImgControlText = null;
     public TextView paramInputControlText = null;
+    public TextView paramMatrixControlText = null;
 
     public int paramBarValue1 = 0;
     public int paramBarValue2 = 0;
     public int paramBarValue3 = 0;
     public int[][] pixelsReference;
     public String paramInputValue;
+    public int[][] paramMatrixValue;
+    public int[][] paramMatrixTemp;
+    public boolean isMatrixValid;
 
     public boolean cancelled = false;
     public int[][] pixelsCurrent;
@@ -87,7 +94,7 @@ public class Main extends Activity {
     public int imageProcess = R.string.emptyProcess;
     public AlertDialog.Builder processChooser;
 
-    public static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
+
 
     // TODO : Add file permissions to save images for Android 6.0+
     /*public  boolean isStoragePermissionGranted() {
@@ -133,11 +140,13 @@ public class Main extends Activity {
         paramBarControlRow3 = (TableRow) findViewById(R.id.paramBarRow3);
         paramImgControlRow = (TableRow) findViewById(R.id.paramImgRow);
         paramInputControlRow = (TableRow) findViewById(R.id.paramInputRow);
+        paramMatrixControlRow = (TableRow) findViewById(R.id.paramMatrixRow);
         paramBarControlRow1.setVisibility(View.GONE);
         paramBarControlRow2.setVisibility(View.GONE);
         paramBarControlRow3.setVisibility(View.GONE);
         paramImgControlRow.setVisibility(View.GONE);
         paramInputControlRow.setVisibility(View.GONE);
+        paramMatrixControlRow.setVisibility(View.GONE);
 
         paramBarControl1 = (SeekBar) findViewById(R.id.paramBar1);
         paramBarControl2 = (SeekBar) findViewById(R.id.paramBar2);
@@ -149,6 +158,7 @@ public class Main extends Activity {
         paramBarControlText3 = (TextView) findViewById(R.id.paramBarText3);
         paramImgControlText = (TextView) findViewById(R.id.paramImgText);
         paramInputControlText = (TextView) findViewById(R.id.paramInputText);
+        paramMatrixControlText = (TextView) findViewById(R.id.paramMatrixText);
 
         processChooser = new AlertDialog.Builder(this);
         processChooser.setTitle(R.string.processChooserTitle);
@@ -211,6 +221,16 @@ public class Main extends Activity {
                     paramInputControl.setTextColor(Color.LTGRAY);
                     paramInputControlRow.setVisibility(View.VISIBLE);
                     paramInputControlText.setTextColor(Color.WHITE);
+
+                    paramMatrixControlRow.setVisibility(View.VISIBLE);
+                    paramMatrixControlText.setText(R.string.matrixConvolutionText);
+                    paramMatrixControlText.setTextColor(Color.WHITE);
+                    paramMatrixValue = new int[5][5];
+                    for (int i=0;i<5;i++){
+                        for (int j=0;j<5;j++){
+                            paramMatrixValue[i][j] = 0;
+                        }
+                    }
                 }
 
                 findViewById(R.id.btApply).setVisibility(View.VISIBLE);
@@ -284,12 +304,21 @@ public class Main extends Activity {
             }
         });
 
-        // Bouton de choix d'une image de référence
+        // Bouton pour choisir une image de référence
 
         findViewById(R.id.btReference).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 btReferenceClick(v);
+            }
+        });
+
+        // Bouton pour éditer la matrice
+
+        findViewById(R.id.btMatrix).setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                btMatrixClick(v);
             }
         });
 
@@ -730,6 +759,93 @@ public class Main extends Activity {
         startActivityForResult(Intent.createChooser(intent, ""), SELECT_REFERENCE_PICTURE);
     }
 
+    @SuppressLint("SetTextI18n")
+    public void btMatrixClick(View v) {
+        paramMatrixTemp = new int[5][5];
+        isMatrixValid = true;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.matrixConvolutionTitle);
+
+        final LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
+        layout.setGravity(Gravity.CENTER);
+
+        final TextView warning = new TextView(this);
+        warning.setText(R.string.valueMatrixWarning);
+        warning.setGravity(Gravity.CENTER);
+        warning.setVisibility(View.VISIBLE);
+        warning.setTextColor(Color.WHITE);
+
+        final LinearLayout layoutMatrixColumns = new LinearLayout(this);
+        layoutMatrixColumns.setOrientation(GridLayout.HORIZONTAL);
+        layoutMatrixColumns.setGravity(Gravity.CENTER);
+
+        final EditText[][] input = new EditText[5][5];
+        for (int i=0;i<5;i++){
+            final LinearLayout layoutMatrixRow = new LinearLayout(this);
+            layoutMatrixRow.setOrientation(GridLayout.VERTICAL);
+            for (int j=0;j<5;j++){
+                input[i][j] = new EditText(this);
+                input[i][j].setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED);
+                input[i][j].setTextColor(Color.LTGRAY);
+                input[i][j].setLayoutParams(new LinearLayout.LayoutParams((int)((getResources().getDisplayMetrics().widthPixels)*0.15),LinearLayout.LayoutParams.WRAP_CONTENT));
+                if (paramMatrixValue[i][j] != 0) {
+                    input[i][j].setText(Integer.toString(paramMatrixValue[i][j]));
+                } else {
+                    input[i][j].setText("");
+                }
+                layoutMatrixRow.addView(input[i][j]);
+            }
+            layoutMatrixColumns.addView(layoutMatrixRow);
+        }
+
+        layout.addView(warning);
+        layout.addView(layoutMatrixColumns);
+        builder.setView(layout);
+        builder.setPositiveButton(R.string.dialogOK, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                for (int i = 0; i < 5; i++) {
+                    for (int j = 0; j < 5; j++) {
+                        String m_Text = input[i][j].getText().toString();
+                        int m_int;
+                        if (!m_Text.equals("")) {
+                            m_int = Integer.parseInt(m_Text);
+                        } else {
+                            m_int = 0;
+                        }
+
+                        if (m_int < 1000) {
+                            paramMatrixTemp[i][j] = m_int;
+
+                        } else {
+                            messageBox.setText(String.format(getString(R.string.valueMatrixError), i + 1, j + 1));
+                            isMatrixValid = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (isMatrixValid) {
+                    for (int i = 0; i < 5; i++) {
+                        System.arraycopy(paramMatrixTemp[i], 0, paramMatrixValue[i], 0, 5);
+                    }
+                    messageBox.setText(R.string.valueMatrixSuccess);
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.dialogCancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
     public void changeParamBar1(View v){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -739,7 +855,7 @@ public class Main extends Activity {
         layout.setOrientation(LinearLayout.VERTICAL);
 
         final TextView warning = new TextView(this);
-        warning.setText(String.format(getString(R.string.valueWarning), paramBarControl1.getMax()));
+        warning.setText(String.format(getString(R.string.valueBarWarning), paramBarControl1.getMax()));
         warning.setGravity(Gravity.CENTER);
         warning.setVisibility(View.VISIBLE);
         warning.setTextColor(Color.WHITE);
@@ -751,7 +867,7 @@ public class Main extends Activity {
         layout.addView(input);
         builder.setView(layout);
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialogOK, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String m_Text = input.getText().toString();
@@ -761,13 +877,13 @@ public class Main extends Activity {
                     paramBarControlText1.setText(m_Text);
                     paramBarValue1 = m_int;
                     paramBarControl1.setProgress(m_int);
-                    messageBox.setText(R.string.valueSuccess);
+                    messageBox.setText(R.string.valueBarSuccess);
                 } else {
-                    messageBox.setText(String.format(getString(R.string.valueError), paramBarControl1.getMax()));
+                    messageBox.setText(String.format(getString(R.string.valueBarError), paramBarControl1.getMax()));
                 }
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.dialogCancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
@@ -786,7 +902,7 @@ public class Main extends Activity {
         layout.setOrientation(LinearLayout.VERTICAL);
 
         final TextView warning = new TextView(this);
-        warning.setText(String.format(getString(R.string.valueWarning), paramBarControl2.getMax()));
+        warning.setText(String.format(getString(R.string.valueBarWarning), paramBarControl2.getMax()));
         warning.setGravity(Gravity.CENTER);
         warning.setVisibility(View.VISIBLE);
         warning.setTextColor(Color.WHITE);
@@ -798,7 +914,7 @@ public class Main extends Activity {
         layout.addView(input);
         builder.setView(layout);
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialogOK, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String m_Text = input.getText().toString();
@@ -808,13 +924,13 @@ public class Main extends Activity {
                     paramBarControlText2.setText(m_Text);
                     paramBarValue2 = m_int;
                     paramBarControl2.setProgress(m_int);
-                    messageBox.setText(R.string.valueSuccess);
+                    messageBox.setText(R.string.valueBarSuccess);
                 } else {
-                    messageBox.setText(String.format(getString(R.string.valueError), paramBarControl2.getMax()));
+                    messageBox.setText(String.format(getString(R.string.valueBarError), paramBarControl2.getMax()));
                 }
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.dialogCancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
@@ -833,7 +949,7 @@ public class Main extends Activity {
         layout.setOrientation(LinearLayout.VERTICAL);
 
         final TextView warning = new TextView(this);
-        warning.setText(String.format(getString(R.string.valueWarning), paramBarControl3.getMax()));
+        warning.setText(String.format(getString(R.string.valueBarWarning), paramBarControl3.getMax()));
         warning.setGravity(Gravity.CENTER);
         warning.setVisibility(View.VISIBLE);
         warning.setTextColor(Color.WHITE);
@@ -845,7 +961,7 @@ public class Main extends Activity {
         layout.addView(input);
         builder.setView(layout);
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton(R.string.dialogOK, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String m_Text = input.getText().toString();
@@ -855,13 +971,13 @@ public class Main extends Activity {
                     paramBarControlText3.setText(m_Text);
                     paramBarValue3 = m_int;
                     paramBarControl3.setProgress(m_int);
-                    messageBox.setText(R.string.valueSuccess);
+                    messageBox.setText(R.string.valueBarSuccess);
                 } else {
-                    messageBox.setText(String.format(getString(R.string.valueError), paramBarControl3.getMax()));
+                    messageBox.setText(String.format(getString(R.string.valueBarError), paramBarControl3.getMax()));
                 }
             }
         });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.dialogCancel, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
