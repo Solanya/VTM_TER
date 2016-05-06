@@ -92,7 +92,7 @@ public class Main extends Activity {
     public int xDelta;
 
     public int imageProcess = R.string.emptyProcess;
-    public AlertDialog.Builder processChooser;
+    public AlertDialog.Builder processCategoryChooser;
 
 
 
@@ -160,10 +160,10 @@ public class Main extends Activity {
         paramInputControlText = (TextView) findViewById(R.id.paramInputText);
         paramMatrixControlText = (TextView) findViewById(R.id.paramMatrixText);
 
-        processChooser = new AlertDialog.Builder(this);
-        processChooser.setTitle(R.string.processChooserTitle);
+        processCategoryChooser = new AlertDialog.Builder(this);
+        processCategoryChooser.setTitle(R.string.processChooserTitle);
         CharSequence processes[] = new CharSequence[] {this.getString(R.string.processSeuil), this.getString(R.string.processFlou), this.getString(R.string.processTest)};
-        processChooser.setItems(processes, new DialogInterface.OnClickListener() {
+        processCategoryChooser.setItems(processes, new DialogInterface.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -226,8 +226,8 @@ public class Main extends Activity {
                     paramMatrixControlText.setText(R.string.matrixConvolutionText);
                     paramMatrixControlText.setTextColor(Color.WHITE);
                     paramMatrixValue = new int[5][5];
-                    for (int i=0;i<5;i++){
-                        for (int j=0;j<5;j++){
+                    for (int i = 0; i < 5; i++) {
+                        for (int j = 0; j < 5; j++) {
                             paramMatrixValue[i][j] = 0;
                         }
                     }
@@ -425,6 +425,100 @@ public class Main extends Activity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    public void enableParamBar1(int max, String textColor){
+        paramBarValue1 = 0;
+        paramBarControlRow1.setVisibility(View.VISIBLE);
+        paramBarControl1.setProgress(paramBarValue1);
+        paramBarControl1.setMax(max);
+        //paramBarControl1.setBackgroundColor(Color.parseColor("#40ff0000"));
+        paramBarControlText1.setTextColor(Color.parseColor(textColor));
+        paramBarControlText1.setText(Integer.toString(paramBarValue1));
+    }
+
+    public void disableParamBar1(){
+        paramBarControlRow1.setVisibility(View.GONE);
+    }
+
+    public void enableParamBar2(int max, String textColor){
+        paramBarValue2 = 0;
+        paramBarControlRow2.setVisibility(View.VISIBLE);
+        paramBarControl2.setProgress(paramBarValue2);
+        paramBarControl2.setMax(max);
+        //paramBarControl2.setBackgroundColor(Color.parseColor("#40ff0000"));
+        paramBarControlText2.setTextColor(Color.parseColor(textColor));
+        paramBarControlText2.setText(Integer.toString(paramBarValue2));
+    }
+
+    public void disableParamBar2(){
+        paramBarControlRow2.setVisibility(View.GONE);
+    }
+
+    public void enableParamBar3(int max, String textColor){
+        paramBarValue3 = 0;
+        paramBarControlRow3.setVisibility(View.VISIBLE);
+        paramBarControl3.setProgress(paramBarValue3);
+        paramBarControl3.setMax(max);
+        //paramBarControl2.setBackgroundColor(Color.parseColor("#40ff0000"));
+        paramBarControlText3.setTextColor(Color.parseColor(textColor));
+        paramBarControlText3.setText(Integer.toString(paramBarValue3));
+    }
+
+    public void disableParamBar3(){
+        paramBarControlRow3.setVisibility(View.GONE);
+    }
+
+    public void enableParamImg(){
+        pixelsReference = null;
+        paramImgControlRow.setVisibility(View.VISIBLE);
+        paramImgControlText.setTextColor(Color.WHITE);
+        paramImgControlText.setText(R.string.imageReferenceEmpty);
+        findViewById(R.id.btApply).setVisibility(View.INVISIBLE);
+    }
+
+    public void disableParamImg(){
+        paramImgControlRow.setVisibility(View.GONE);
+    }
+
+    public void enableParamInput(){
+        paramInputControl.setText("");
+        paramInputControl.setTextColor(Color.LTGRAY);
+        paramInputControlRow.setVisibility(View.VISIBLE);
+        paramInputControlText.setTextColor(Color.WHITE);
+    }
+
+    public void disableParamInput(){
+        paramInputControlRow.setVisibility(View.GONE);
+    }
+
+    public void enableParamMatrix(int matrixNameID){
+        paramMatrixControlRow.setVisibility(View.VISIBLE);
+        paramMatrixControlText.setText(matrixNameID);
+        paramMatrixControlText.setTextColor(Color.WHITE);
+        paramMatrixValue = new int[5][5];
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                paramMatrixValue[i][j] = 0;
+            }
+        }
+    }
+
+    public void enableParamMatrix(String matrixNameStr){
+        paramMatrixControlRow.setVisibility(View.VISIBLE);
+        paramMatrixControlText.setText(matrixNameStr);
+        paramMatrixControlText.setTextColor(Color.WHITE);
+        paramMatrixValue = new int[5][5];
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                paramMatrixValue[i][j] = 0;
+            }
+        }
+    }
+
+    public void disableParamMatrix(){
+        paramMatrixControlRow.setVisibility(View.GONE);
+    }
+
     public boolean menuFlip(MotionEvent event) {
         final int X = (int) event.getRawX();
         switch (event.getAction() & MotionEvent.ACTION_MASK){
@@ -554,7 +648,7 @@ public class Main extends Activity {
     public void btChooseClick(View v) {
         ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_right);
         ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
-        processChooser.show();
+        processCategoryChooser.show();
     }
 
     private class AsyncApplyTask extends AsyncTask<Void, Void, Void>
@@ -1044,6 +1138,7 @@ public class Main extends Activity {
                     String[] pathSplit = path.split("/");
 
                     paramImgControlText.setText(pathSplit[pathSplit.length-1]);
+                    findViewById(R.id.btApply).setVisibility(View.VISIBLE);
 
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
