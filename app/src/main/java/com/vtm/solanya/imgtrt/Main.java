@@ -170,67 +170,37 @@ public class Main extends Activity {
                 if (which == 0) {
 
                     imageProcess = R.string.processSeuil;
-                    paramBarValue1 = 0;
-                    paramBarValue2 = 0;
-                    paramBarValue3 = 0;
 
-                    paramBarControlRow1.setVisibility(View.VISIBLE);
-                    paramBarControl1.setProgress(paramBarValue1);
-                    paramBarControl1.setMax(255);
-                    paramBarControl1.setBackgroundColor(Color.parseColor("#40ff0000"));
-                    paramBarControlText1.setTextColor(Color.RED);
-                    paramBarControlText1.setText(Integer.toString(paramBarValue1));
+                    enableParamBar1(255, "#ff0000");
+                    enableParamBar2(255, "#00ff00");
+                    enableParamBar3(255, "#6666ff");
 
-                    paramBarControlRow2.setVisibility(View.VISIBLE);
-                    paramBarControl2.setProgress(paramBarValue2);
-                    paramBarControl2.setMax(255);
-                    paramBarControl2.setBackgroundColor(Color.parseColor("#4000ff00"));
-                    paramBarControlText2.setTextColor(Color.GREEN);
-                    paramBarControlText2.setText(Integer.toString(paramBarValue2));
-
-                    paramBarControlRow3.setVisibility(View.VISIBLE);
-                    paramBarControl3.setProgress(paramBarValue3);
-                    paramBarControl3.setMax(255);
-                    paramBarControl3.setBackgroundColor(Color.parseColor("#400000ff"));
-                    paramBarControlText3.setTextColor(Color.parseColor("#8888ff"));
-                    paramBarControlText3.setText(Integer.toString(paramBarValue3));
+                    disableParamImg();
+                    disableParamInput();
+                    disableParamMatrix();
 
                 } else if (which == 1) {
 
                     imageProcess = R.string.processFlou;
-                    paramBarValue1 = 0;
 
-                    paramBarControlRow1.setVisibility(View.VISIBLE);
-                    paramBarControl1.setProgress(paramBarValue1);
-                    paramBarControl1.setMax(5);
-                    paramBarControl1.setBackgroundColor(Color.parseColor("#40000000"));
-                    paramBarControlText1.setTextColor(Color.WHITE);
-                    paramBarControlText1.setText(Integer.toString(paramBarValue1));
+                    enableParamBar1(5, "#ffffff");
 
-                    paramBarControlRow2.setVisibility(View.GONE);
-
-                    paramBarControlRow3.setVisibility(View.GONE);
+                    disableParamBar2();
+                    disableParamBar3();
+                    disableParamImg();
+                    disableParamInput();
+                    disableParamMatrix();
 
                 } else if (which == 2) {
                     imageProcess = R.string.processTest;
-                    paramImgControlRow.setVisibility(View.VISIBLE);
-                    paramImgControlText.setTextColor(Color.WHITE);
-                    paramImgControlText.setText(R.string.imageReferenceEmpty);
 
-                    paramInputControl.setText("");
-                    paramInputControl.setTextColor(Color.LTGRAY);
-                    paramInputControlRow.setVisibility(View.VISIBLE);
-                    paramInputControlText.setTextColor(Color.WHITE);
+                    disableParamBar1();
+                    disableParamBar2();
+                    disableParamBar3();
 
-                    paramMatrixControlRow.setVisibility(View.VISIBLE);
-                    paramMatrixControlText.setText(R.string.matrixConvolutionText);
-                    paramMatrixControlText.setTextColor(Color.WHITE);
-                    paramMatrixValue = new int[5][5];
-                    for (int i = 0; i < 5; i++) {
-                        for (int j = 0; j < 5; j++) {
-                            paramMatrixValue[i][j] = 0;
-                        }
-                    }
+                    enableParamImg();
+                    enableParamInput();
+                    enableParamMatrix(R.string.matrixConvolutionText);
                 }
 
                 findViewById(R.id.btApply).setVisibility(View.VISIBLE);
@@ -440,6 +410,7 @@ public class Main extends Activity {
         paramBarControlRow1.setVisibility(View.GONE);
     }
 
+    @SuppressLint("SetTextI18n")
     public void enableParamBar2(int max, String textColor){
         paramBarValue2 = 0;
         paramBarControlRow2.setVisibility(View.VISIBLE);
@@ -454,6 +425,7 @@ public class Main extends Activity {
         paramBarControlRow2.setVisibility(View.GONE);
     }
 
+    @SuppressLint("SetTextI18n")
     public void enableParamBar3(int max, String textColor){
         paramBarValue3 = 0;
         paramBarControlRow3.setVisibility(View.VISIBLE);

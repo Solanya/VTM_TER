@@ -135,7 +135,8 @@
                         android:layout_weight="1"
                         android:textIsSelectable="false"
                         android:gravity="center"
-                        android:minWidth="30dp" />
+                        android:minWidth="30dp"
+                        android:layout_gravity="center_vertical" />
 
                     <SeekBar
                         android:layout_width="fill_parent"
@@ -143,7 +144,6 @@
                         android:id="@+id/paramBar1"
                         android:max="255"
                         android:indeterminate="false"
-                        android:background="#40ff0000"
                         android:layout_column="1"
                         android:layout_weight="29"
                         android:layout_marginRight="5dp" />
@@ -161,14 +161,14 @@
                         android:layout_column="0"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:minWidth="30dp" />
+                        android:minWidth="30dp"
+                        android:layout_gravity="center_vertical" />
 
                     <SeekBar
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/paramBar2"
                         android:max="255"
-                        android:background="#4000ff00"
                         android:layout_column="1"
                         android:layout_weight="29"
                         android:layout_marginRight="5dp" />
@@ -186,14 +186,14 @@
                         android:layout_column="0"
                         android:layout_weight="1"
                         android:gravity="center"
-                        android:minWidth="30dp" />
+                        android:minWidth="30dp"
+                        android:layout_gravity="center_vertical" />
 
                     <SeekBar
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:id="@+id/paramBar3"
                         android:max="255"
-                        android:background="#400000ff"
                         android:layout_column="1"
                         android:layout_weight="29"
                         android:layout_marginRight="5dp" />
@@ -234,7 +234,7 @@
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:id="@+id/btMatrix"
-                    android:background="@mipmap/ic_reference"
+                    android:background="@mipmap/ic_matrix"
                     android:layout_marginLeft="5dp"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1" />
