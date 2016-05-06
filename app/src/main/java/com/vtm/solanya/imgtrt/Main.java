@@ -93,6 +93,10 @@ public class Main extends Activity {
 
     public int imageProcess = R.string.emptyProcess;
     public AlertDialog.Builder processCategoryChooser;
+    public AlertDialog.Builder processHistogramChooser;
+    public AlertDialog.Builder processMorphologyChooser;
+    public AlertDialog.Builder processFilterChooser;
+    public AlertDialog.Builder processCosmeticChooser;
 
 
 
@@ -161,51 +165,305 @@ public class Main extends Activity {
         paramMatrixControlText = (TextView) findViewById(R.id.paramMatrixText);
 
         processCategoryChooser = new AlertDialog.Builder(this);
-        processCategoryChooser.setTitle(R.string.processChooserTitle);
-        CharSequence processes[] = new CharSequence[] {this.getString(R.string.processSeuil), this.getString(R.string.processFlou), this.getString(R.string.processTest)};
-        processCategoryChooser.setItems(processes, new DialogInterface.OnClickListener() {
+        processHistogramChooser = new AlertDialog.Builder(this);
+        processMorphologyChooser = new AlertDialog.Builder(this);
+        processFilterChooser = new AlertDialog.Builder(this);
+        processCosmeticChooser = new AlertDialog.Builder(this);
+
+        processCategoryChooser.setTitle(R.string.processCategoryChooserTitle);
+        //CharSequence processes[] = new CharSequence[] {this.getString(R.string.processSeuil), this.getString(R.string.processFlou), this.getString(R.string.processTest)};
+        CharSequence processCategories[] = new CharSequence[] {
+                getString(R.string.processCategoryHistogram),
+                getString(R.string.processCategoryMorphology),
+                getString(R.string.processCategoryFilter),
+                getString(R.string.processCategoryCosmetic)
+        };
+        processCategoryChooser.setItems(processCategories, new DialogInterface.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0) {
+            public void onClick(DialogInterface dialog, int whichCategory) {
 
-                    imageProcess = R.string.processSeuil;
+                // Modification d'histogramme
+                if (whichCategory == 0) {
 
-                    enableParamBar1(255, "#ff0000");
-                    enableParamBar2(255, "#00ff00");
-                    enableParamBar3(255, "#6666ff");
+                    processHistogramChooser.setTitle(R.string.processHistogramChooserTitle);
+                    CharSequence processesHistogram[] = new CharSequence[] {
+                            getString(R.string.processHistogramSeuil),
+                            getString(R.string.processHistogramSpecification),
+                            getString(R.string.processHistogramEgalisation),
+                            getString(R.string.processHistogramExpansion)
+                    };
+                    processHistogramChooser.setItems(processesHistogram, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichProcess) {
 
-                    disableParamImg();
-                    disableParamInput();
-                    disableParamMatrix();
+                            // Seuil
+                            if (whichProcess == 0) {
 
-                } else if (which == 1) {
+                                imageProcess = R.string.processHistogramSeuil;
 
-                    imageProcess = R.string.processFlou;
+                                enableParamBar1(255, "#ff0000");
+                                enableParamBar2(255, "#00ff00");
+                                enableParamBar3(255, "#6666ff");
 
-                    enableParamBar1(5, "#ffffff");
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+                            // Spécification
+                            else if (whichProcess == 1) {
 
-                    disableParamBar2();
-                    disableParamBar3();
-                    disableParamImg();
-                    disableParamInput();
-                    disableParamMatrix();
+                                imageProcess = R.string.processHistogramSpecification;
 
-                } else if (which == 2) {
-                    imageProcess = R.string.processTest;
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
 
-                    disableParamBar1();
-                    disableParamBar2();
-                    disableParamBar3();
+                                enableParamImg();
 
-                    enableParamImg();
-                    enableParamInput();
-                    enableParamMatrix(R.string.matrixConvolutionText);
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+                            // Egalisation
+                            else if (whichProcess == 2) {
+
+                                imageProcess = R.string.processHistogramEgalisation;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+                            // Expansion
+                            else if (whichProcess == 3) {
+
+                                imageProcess = R.string.processHistogramExpansion;
+
+                                enableParamBar1(50, "#ffffff");
+
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+
+                            messageBox.setText(String.format(getString(R.string.choice), getString(imageProcess)));
+                            ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
+                        }
+                    });
+                    processHistogramChooser.show();
+
+                }
+                // Morphologie
+                else if (whichCategory == 1) {
+
+                    processMorphologyChooser.setTitle(R.string.processMorphologyChooserTitle);
+                    CharSequence processesMorphology[] = new CharSequence[] {
+                            getString(R.string.processMorphologyDilatation),
+                            getString(R.string.processMorphologyErosion),
+                            getString(R.string.processMorphologyOuverture),
+                            getString(R.string.processMorphologyFermeture)
+                    };
+                    processMorphologyChooser.setItems(processesMorphology, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichProcess) {
+                            // Dilatation
+                            if (whichProcess == 0) {
+                                imageProcess = R.string.processMorphologyDilatation;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+                            // Erosion
+                            else if (whichProcess == 1) {
+                                imageProcess = R.string.processMorphologyErosion;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+                            // Ouverture
+                            else if (whichProcess == 2) {
+                                imageProcess = R.string.processMorphologyOuverture;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+                            // Fermeture
+                            else if (whichProcess == 3) {
+                                imageProcess = R.string.processMorphologyFermeture;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+
+                            messageBox.setText(String.format(getString(R.string.choice), getString(imageProcess)));
+                            ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
+                        }
+                    });
+                    processMorphologyChooser.show();
+
+                }
+                // Filtres
+                else if (whichCategory == 2) {
+
+                    processFilterChooser.setTitle(R.string.processFilterChooserTitle);
+                    CharSequence processesFilter[] = new CharSequence[] {
+                            getString(R.string.processFilterConvolution),
+                            getString(R.string.processFilterMedian),
+                            getString(R.string.processFilterMoyenneur),
+                            getString(R.string.processFilterGaussien),
+                            getString(R.string.processFilterKirsch)
+                    };
+                    processFilterChooser.setItems(processesFilter, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichProcess) {
+                            // Filtre de convolution
+                            if (whichProcess == 0) {
+                                imageProcess = R.string.processFilterConvolution;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+
+                                enableParamMatrix(R.string.matrixConvolutionText);
+
+                            }
+                            // Filtre médian
+                            else if (whichProcess == 1) {
+                                imageProcess = R.string.processFilterMedian;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+
+                            }
+                            // Filtre moyenneur
+                            else if (whichProcess == 2) {
+                                imageProcess = R.string.processFilterMoyenneur;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+
+                            }
+                            // Filtre gaussien
+                            else if (whichProcess == 3) {
+                                imageProcess = R.string.processFilterGaussien;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+
+                            }
+                            // Filtre détecteur de contours (Kirsch)
+                            else if (whichProcess == 4) {
+                                imageProcess = R.string.processFilterKirsch;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+
+                            }
+
+                            messageBox.setText(String.format(getString(R.string.choice), getString(imageProcess)));
+                            ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
+                        }
+                    });
+                    processFilterChooser.show();
+
+                }
+                // Filtres cosmétiques
+                else if (whichCategory == 3) {
+
+                    processCosmeticChooser.setTitle(R.string.processCosmeticChooserTitle);
+                    CharSequence processesCosmetic[] = new CharSequence[] {
+                            getString(R.string.processCosmeticGrey),
+                            getString(R.string.processCosmeticSepia),
+                            getString(R.string.processCosmeticNegative),
+                            getString(R.string.processCosmeticMirror)
+                    };
+                    processCosmeticChooser.setItems(processesCosmetic, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichProcess) {
+                            if (whichProcess == 0) {
+                                imageProcess = R.string.processCosmeticGrey;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            } else if (whichProcess == 1) {
+                                imageProcess = R.string.processCosmeticSepia;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            } else if (whichProcess == 2) {
+                                imageProcess = R.string.processCosmeticNegative;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            } else if (whichProcess == 3) {
+                                imageProcess = R.string.processCosmeticMirror;
+
+                                disableParamBar1();
+                                disableParamBar2();
+                                disableParamBar3();
+                                disableParamImg();
+                                disableParamInput();
+                                disableParamMatrix();
+                            }
+
+                            messageBox.setText(String.format(getString(R.string.choice), getString(imageProcess)));
+                            ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
+                        }
+                    });
+                    processCosmeticChooser.show();
+
                 }
 
-                findViewById(R.id.btApply).setVisibility(View.VISIBLE);
-                messageBox.setText(String.format(getString(R.string.choice), getString(imageProcess)));
-                ((ViewFlipper) findViewById(R.id.menuFlipper)).showNext();
             }
         });
 
@@ -450,6 +708,7 @@ public class Main extends Activity {
 
     public void disableParamImg(){
         paramImgControlRow.setVisibility(View.GONE);
+        findViewById(R.id.btApply).setVisibility(View.VISIBLE);
     }
 
     public void enableParamInput(){
@@ -627,11 +886,11 @@ public class Main extends Activity {
     {
         @Override
         protected Void doInBackground(Void... params) {
-            if (imageProcess == R.string.processSeuil) {
+            if (imageProcess == R.string.processHistogramSeuil) {
                 applySeuil();
             }
             else if (imageProcess == R.string.processFlou) {
-                applyFlou();
+
             }
             return null;
         }
@@ -732,7 +991,7 @@ public class Main extends Activity {
 
     }
 
-    public void applyFlou(){
+    /*public void applyFlou(){
 
         int flouWindow = paramBarValue1;
 
@@ -770,7 +1029,7 @@ public class Main extends Activity {
                 toPixelRGB(x, y, rFlou, gFlou, bFlou);
             }
         }
-    }
+    }*/
 
     public void toPixelCopy(int x, int y, int C){
         pixelsTemp[imageWidth * y + x] = C;
@@ -883,7 +1142,7 @@ public class Main extends Activity {
                             m_int = 0;
                         }
 
-                        if (m_int < 1000) {
+                        if (m_int < 100) {
                             paramMatrixTemp[i][j] = m_int;
 
                         } else {

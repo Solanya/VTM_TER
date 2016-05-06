@@ -2,32 +2,71 @@
     <string name="app_name">otTER</string>
     <string name="welcome">Bienvenue !</string>
     <string name="choice">Choix : %1$s</string>
+
     <string name="exitTitle">Quitter ?</string>
     <string name="exitMessage">Êtes-vous sûr de vouloir quitter l\'application ?</string>
     <string name="exitYes">Oui</string>
     <string name="exitNo">Non</string>
     <string name="dialogOK">OK</string>
     <string name="dialogCancel">Annuler</string>
+
     <string name="camCancelled">Prise de photo annulée.</string>
     <string name="camError">Erreur durant la prise de photo.</string>
     <string name="saveError">Erreur durant la sauvegarde.</string>
     <string name="saveSuccess">Sauvegarde effectuée.</string>
+
     <string name="valueChangeTitle">Changer la valeur du paramètre</string>
+
     <string name="valueBarWarning">La valeur doit être choisie entre 0 et %1$d</string>
-    <string name="valueMatrixWarning">Intervalle de valeurs : [-999;999]</string>
     <string name="valueBarError">Erreur : la valeur doit être choisie entre 0 et %1$d</string>
-    <string name="valueMatrixError">Erreur : la valeur en colonne %1$d et ligne %2$d est hors-limite.</string>
     <string name="valueBarSuccess">Valeur du paramètre modifiée.</string>
+
+    <string name="valueMatrixWarning">Intervalle de valeurs : [-99;99]</string>
+    <string name="valueMatrixError">Erreur : la valeur en colonne %1$d et ligne %2$d est hors-limite.</string>
     <string name="valueMatrixSuccess">Valeurs de la grille modifiées.</string>
+
     <string name="imageEmpty">Pas d\'image.</string>
     <string name="imageReferenceEmpty">Pas d\'image de référence.</string>
+
     <string name="matrixConvolutionText">Editer la matrice de convolution.</string>
     <string name="matrixConvolutionTitle">Matrice de convolution</string>
+
     <string name="emptyProcess">Pas de traitement sélectionné.</string>
     <string name="applyingProcess">%1$s en cours…</string>
-    <string name="processChooserTitle">Choix de traitements</string>
-    <string name="processSeuil">Seuil</string>
+
+    <string name="processCategoryChooserTitle">Choix de traitement</string>
+    <string name="processCategoryHistogram">Histogramme</string>
+    <string name="processCategoryMorphology">Morphologie</string>
+    <string name="processCategoryFilter">Filtre</string>
+    <string name="processCategoryCosmetic">Cosmétique</string>
+
+    <string name="processHistogramChooserTitle">Modification d\'histogramme</string>
+    <string name="processHistogramSeuil">Seuil</string>
+    <string name="processHistogramSpecification">Spécification</string>
+    <string name="processHistogramEgalisation">Egalisation</string>
+    <string name="processHistogramExpansion">Expansion</string>
+
+    <string name="processMorphologyChooserTitle">Morphologie</string>
+    <string name="processMorphologyDilatation">Seuil</string>
+    <string name="processMorphologyErosion">Spécification</string>
+    <string name="processMorphologyOuverture">Egalisation</string>
+    <string name="processMorphologyFermeture">Expansion</string>
+
+    <string name="processFilterChooserTitle">Filtre</string>
+    <string name="processFilterConvolution">Convolution</string>
+    <string name="processFilterMedian">Médian</string>
+    <string name="processFilterMoyenneur">Moyenneur</string>
+    <string name="processFilterGaussien">Gaussien</string>
+    <string name="processFilterKirsch">Détection de contours (Kirsch)</string>
+
+    <string name="processCosmeticChooserTitle">Cosmétique</string>
+    <string name="processCosmeticGrey">Niveaux de gris</string>
+    <string name="processCosmeticSepia">Sépia</string>
+    <string name="processCosmeticNegative">Négatif</string>
+    <string name="processCosmeticMirror">Miroir</string>
+
     <string name="processFlou">Flou</string>
     <string name="processTest">Test</string>
+
     <string name="settings">Paramètres</string>
 </resources>
