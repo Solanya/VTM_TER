@@ -281,7 +281,8 @@
                 android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="40dp"
-                android:layout_weight="4">
+                android:layout_weight="4"
+                android:layout_gravity="bottom">
 
                 <ImageButton
                     android:id="@+id/btApply"

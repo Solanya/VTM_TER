@@ -47,10 +47,10 @@
     <string name="processHistogramExpansion">Expansion</string>
 
     <string name="processMorphologyChooserTitle">Morphologie</string>
-    <string name="processMorphologyDilatation">Seuil</string>
-    <string name="processMorphologyErosion">Spécification</string>
-    <string name="processMorphologyOuverture">Egalisation</string>
-    <string name="processMorphologyFermeture">Expansion</string>
+    <string name="processMorphologyDilatation">Dilatation</string>
+    <string name="processMorphologyErosion">Erosion</string>
+    <string name="processMorphologyOuverture">Ouverture</string>
+    <string name="processMorphologyFermeture">Fermeture</string>
 
     <string name="processFilterChooserTitle">Filtre</string>
     <string name="processFilterConvolution">Convolution</string>
