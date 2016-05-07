@@ -305,7 +305,6 @@ public class Main extends Activity {
                     processFilterChooser.setTitle(R.string.processFilterChooserTitle);
                     CharSequence processesFilter[] = new CharSequence[] {
                             getString(R.string.processFilterConvolution),
-                            getString(R.string.processFilterMedian),
                             getString(R.string.processFilterMoyenneur),
                             getString(R.string.processFilterGaussien),
                             getString(R.string.processFilterKirsch)
@@ -326,20 +325,8 @@ public class Main extends Activity {
                                 enableParamMatrix(R.string.matrixConvolutionText);
 
                             }
-                            // Filtre médian
-                            else if (whichProcess == 1) {
-                                imageProcess = R.string.processFilterMedian;
-
-                                disableParamBar1();
-                                disableParamBar2();
-                                disableParamBar3();
-                                disableParamImg();
-                                disableParamInput();
-                                disableParamMatrix();
-
-                            }
                             // Filtre moyenneur
-                            else if (whichProcess == 2) {
+                            else if (whichProcess == 1) {
                                 imageProcess = R.string.processFilterMoyenneur;
 
                                 disableParamBar1();
@@ -351,7 +338,7 @@ public class Main extends Activity {
 
                             }
                             // Filtre gaussien
-                            else if (whichProcess == 3) {
+                            else if (whichProcess == 2) {
                                 imageProcess = R.string.processFilterGaussien;
 
                                 disableParamBar1();
@@ -363,7 +350,7 @@ public class Main extends Activity {
 
                             }
                             // Filtre détecteur de contours (Kirsch)
-                            else if (whichProcess == 4) {
+                            else if (whichProcess == 3) {
                                 imageProcess = R.string.processFilterKirsch;
 
                                 disableParamBar1();
@@ -946,8 +933,27 @@ public class Main extends Activity {
             else if (imageProcess == R.string.processFilterConvolution) {
                 applyConvolution();
             }
+            else if (imageProcess == R.string.processFilterMoyenneur) {
+                applyMoyenneur();
+            }
+            else if (imageProcess == R.string.processFilterGaussien) {
+                applyGaussien();
+            }
             else if (imageProcess == R.string.processFilterKirsch) {
                 applyKirsch();
+            }
+            // Cosmétique
+            else if (imageProcess == R.string.processCosmeticGrey) {
+                applyGrey();
+            }
+            else if (imageProcess == R.string.processCosmeticSepia) {
+                applySepia();
+            }
+            else if (imageProcess == R.string.processCosmeticNegative) {
+                applyNegative();
+            }
+            else if (imageProcess == R.string.processCosmeticMirror) {
+                applyMirror();
             }
             return null;
         }
@@ -1323,9 +1329,6 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
             {
-
-                // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
-
                 toPixelCopy(x,y,pixelsOld[x][y]);
             }
 
@@ -1361,6 +1364,85 @@ public class Main extends Activity {
 
 
 
+    // **********  Fonction Filtre moyenneur  **********
+
+
+    public void applyMoyenneur() {
+        setParamMatrixValue(1, 1, 1, 1, 1,
+                            1, 1, 1, 1, 1,
+                            1, 1, 1, 1, 1,
+                            1, 1, 1, 1, 1,
+                            1, 1, 1, 1, 1);
+        paramMatrixNorme = 25;
+
+        int sum_r, sum_g, sum_b;
+
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+            {
+                toPixelCopy(x,y,pixelsOld[x][y]);
+            }
+
+        for(int x = 2;x < imageWidth - 2;x++)
+            for(int y = 2;y < imageHeight - 2;y++)
+            {
+                sum_r = 0;
+                sum_g = 0;
+                sum_b = 0;
+
+                for(int i = x - 2;i < x + 2;i++)
+                    for(int j = y - 2;j < y + 2;j++)
+                    {
+                        sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                        sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                        sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                    }
+
+                toPixelRGB(x,y,sum_r/paramMatrixNorme,sum_g/paramMatrixNorme,sum_b/paramMatrixNorme);
+            }
+    }
+
+
+    // **********  Fonction Filtre gaussien  **********
+
+
+    public void applyGaussien() {
+        setParamMatrixValue(1, 4,  6,  4,  1,
+                            4, 18, 30, 18, 4,
+                            6, 30, 48, 30, 6,
+                            4, 18, 30, 18, 4,
+                            1, 4,  6,  4,  1);
+        paramMatrixNorme = 300;
+
+        int sum_r, sum_g, sum_b;
+
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+            {
+                toPixelCopy(x,y,pixelsOld[x][y]);
+            }
+
+        for(int x = 2;x < imageWidth - 2;x++)
+            for(int y = 2;y < imageHeight - 2;y++)
+            {
+                sum_r = 0;
+                sum_g = 0;
+                sum_b = 0;
+
+                for(int i = x - 2;i < x + 2;i++)
+                    for(int j = y - 2;j < y + 2;j++)
+                    {
+                        sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                        sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                        sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                    }
+
+                toPixelRGB(x,y,sum_r/paramMatrixNorme,sum_g/paramMatrixNorme,sum_b/paramMatrixNorme);
+            }
+    }
+
+
+
     // **********  Fonction Detection de contours (Kirsch)  **********
 
 
@@ -1373,11 +1455,15 @@ public class Main extends Activity {
                 toPixelCopy(x,y,pixelsOld[x][y]);
             }
 
-        int[][] gauss = {{2,4,5,4,2},{4,9,12,9,4},{5,12,15,12,15},{4,9,12,9,4},{2,4,5,4,2}};
+        setParamMatrixValue(2, 4,  5,  4,  2,
+                            4, 9,  12, 9,  4,
+                            5, 12, 15, 12, 5,
+                            4, 9,  12, 9,  4,
+                            2, 4,  5,  4,  2);
+        paramMatrixNorme = 159;
 
         int[][][] grad_temp = new int[imageWidth][imageHeight][3];
 
-        float div = 159;
         progressBarControl.setMax(imageHeight*imageWidth*2);
 
         for(int x = 2;x < imageWidth - 2;x++)
@@ -1389,11 +1475,11 @@ public class Main extends Activity {
                 for(int i = x - 2;i < x + 2;i++)
                     for(int j = y - 2;j < y + 2;j++)
                     {
-                        sum_r += gauss[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                        sum_g += gauss[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                        sum_b += gauss[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                        sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                        sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                        sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
                     }
-                toPixelRGB(x,y,(int)(sum_r/div),(int)(sum_g/div),(int)(sum_b/div));
+                toPixelRGB(x,y,sum_r/paramMatrixNorme,sum_g/paramMatrixNorme,sum_b/paramMatrixNorme);
             }
 
         for(int x = 1;x < imageWidth - 1;x++)
@@ -1448,6 +1534,60 @@ public class Main extends Activity {
             default :
                 return 0;
         }
+    }
+
+
+
+    // **********  Fonction Niveaux de gris  **********
+
+
+    public void applyGrey() {
+        int val;
+
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+            {
+                val = (int)((float)Color.red(pixelsOld[x][y]) * 0.2989 + (float)Color.green(pixelsOld[x][y]) * 0.587 + (float)Color.blue(pixelsOld[x][y]) * 0.114);
+                toPixelRGB(x,y,val,val,val);
+            }
+    }
+
+
+    // **********  Fonction Sepia  **********
+
+
+    public void applySepia() {
+        int red,green,blue;
+
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+            {
+                red = (int)((float)Color.red(pixelsOld[x][y]) * 0.393 + (float)Color.green(pixelsOld[x][y]) * 0.769 + (float)Color.blue(pixelsOld[x][y]) * 0.189);
+                green = (int)((float)Color.red(pixelsOld[x][y]) * 0.349 + (float)Color.green(pixelsOld[x][y]) * 0.686 + (float)Color.blue(pixelsOld[x][y]) * 0.168);
+                blue = (int)((float)Color.red(pixelsOld[x][y]) * 0.272 + (float)Color.green(pixelsOld[x][y]) * 0.534 + (float)Color.blue(pixelsOld[x][y]) * 0.131);
+
+                toPixelRGB(x,y,(red > 255 ? 255:red),(green > 255 ? 255:green),(blue > 255 ? 255:blue));
+            }
+    }
+
+
+    // **********  Fonction Negatif  **********
+
+
+    public void applyNegative() {
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+                toPixelRGB(x,y,255 - Color.red(pixelsOld[x][y]),255 - Color.green(pixelsOld[x][y]),255 - Color.blue(pixelsOld[x][y]));
+    }
+
+
+    // **********  Fonction Mirroir  **********
+
+
+    public void applyMirror() {
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+                toPixelRGB(x,y,Color.red(pixelsOld[imageWidth - 1 - x][y]),Color.green(pixelsOld[imageWidth - 1 - x][y]),Color.blue(pixelsOld[imageWidth - 1 - x][y]));
     }
 
     /**************************************************************
@@ -1509,6 +1649,20 @@ public class Main extends Activity {
     int max_8(int a,int b,int c,int d,int e,int f,int g,int h)
     {
         return max_2(max_2(max_2(a,b),max_2(c,d)),max_2(max_2(e,f),max_2(g,h)));
+    }
+
+    public void setParamMatrixValue(int m00, int m10, int m20, int m30, int m40,
+                                    int m01, int m11, int m21, int m31, int m41,
+                                    int m02, int m12, int m22, int m32, int m42,
+                                    int m03, int m13, int m23, int m33, int m43,
+                                    int m04, int m14, int m24, int m34, int m44)
+    {
+        paramMatrixValue = new int[5][5];
+        paramMatrixValue[0][0] = m00; paramMatrixValue[1][0] = m10; paramMatrixValue[2][0] = m20; paramMatrixValue[3][0] = m30; paramMatrixValue[4][0] = m40;
+        paramMatrixValue[0][1] = m01; paramMatrixValue[1][1] = m11; paramMatrixValue[2][1] = m21; paramMatrixValue[3][1] = m31; paramMatrixValue[4][1] = m41;
+        paramMatrixValue[0][2] = m02; paramMatrixValue[1][2] = m12; paramMatrixValue[2][2] = m22; paramMatrixValue[3][2] = m32; paramMatrixValue[4][2] = m42;
+        paramMatrixValue[0][3] = m03; paramMatrixValue[1][3] = m13; paramMatrixValue[2][3] = m23; paramMatrixValue[3][3] = m33; paramMatrixValue[4][3] = m43;
+        paramMatrixValue[0][4] = m04; paramMatrixValue[1][4] = m14; paramMatrixValue[2][4] = m24; paramMatrixValue[3][4] = m34; paramMatrixValue[4][4] = m44;
     }
 
     public void btUndoClick(View v) {
