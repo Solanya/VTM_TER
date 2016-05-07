@@ -954,6 +954,9 @@ public class Main extends Activity {
             else if (imageProcess == R.string.processHistogramSpecification) {
                 applySpecification();
             }
+            else if (imageProcess == R.string.processHistogramEgalisation) {
+                applyEgalisation();
+            }
             return null;
         }
         @Override
@@ -965,7 +968,7 @@ public class Main extends Activity {
     }
 
 
-    // Fonction Seuil
+    // **********  Fonction Seuil  **********
 
 
     public void applySeuil(){
@@ -1012,6 +1015,10 @@ public class Main extends Activity {
         }
 
     }
+
+
+    // **********  Fonction Specification  **********
+
 
     public void applySpecification(){
         float[][] ddpImg = new float[256][3];
@@ -1089,6 +1096,44 @@ public class Main extends Activity {
             }
         }
 
+    }
+
+
+    // **********  Fonction Egalisation  **********
+
+
+    public void applyEgalisation(){
+        float[][] ddp = new float[256][3];
+
+        int nbPixel = imageWidth * imageHeight;
+        int egalR, egalG, egalB;
+
+        for (int x = 0 ; x < imageWidth ; x++)
+            for (int y = 0 ; y < imageHeight ; y++)
+            {
+                ddp[Color.red(pixelsOld[x][y])][0]++;
+                ddp[Color.green(pixelsOld[x][y])][1]++;
+                ddp[Color.blue(pixelsOld[x][y])][2]++;
+            }
+
+        for (int j = 0 ; j < 3 ; j++)
+            ddp[0][j] = ddp[0][j] / (float)nbPixel;
+
+        for (int i = 1 ; i < 256 ; i++)
+            for (int j = 0 ; j < 3 ; j++)
+            {
+                ddp[i][j] = ddp[i][j] / (float)nbPixel;
+                ddp[i][j] += ddp[i-1][j];
+            }
+
+        for(int x = 0 ; x < imageWidth ; x++)
+            for(int y = 0 ; y < imageHeight ; y++)
+            {
+                egalR = (int)(255 * ddp[Color.red(pixelsOld[x][y])][0]);
+                egalG = (int)(255 * ddp[Color.green(pixelsOld[x][y])][1]);
+                egalB = (int)(255 * ddp[Color.blue(pixelsOld[x][y])][2]);
+                toPixelRGB(x, y, egalR, egalG, egalB);
+            }
     }
 
 
@@ -1505,7 +1550,7 @@ public class Main extends Activity {
     @Override
     public void onBackPressed(){
         new AlertDialog.Builder(this)
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(R.mipmap.ic_exitconfirm)
                 .setTitle(R.string.exitTitle)
                 .setMessage(R.string.exitMessage)
                 .setPositiveButton(R.string.exitYes, new DialogInterface.OnClickListener() {
