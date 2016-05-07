@@ -22,7 +22,8 @@
     <string name="valueBarSuccess">Valeur du paramètre modifiée.</string>
 
     <string name="valueMatrixWarning">Intervalle de valeurs : [-99;99]</string>
-    <string name="valueMatrixError">Erreur : la valeur en colonne %1$d et ligne %2$d est hors-limite.</string>
+    <string name="valueMatrixBoundsError">Erreur : la valeur en colonne %1$d et ligne %2$d est hors-limite.</string>
+    <string name="valueMatrixNormError">Erreur : la valeur en colonne %1$d et ligne %2$d est hors-limite.</string>
     <string name="valueMatrixSuccess">Valeurs de la grille modifiées.</string>
 
     <string name="imageEmpty">Pas d\'image.</string>
@@ -49,8 +50,6 @@
     <string name="processMorphologyChooserTitle">Morphologie</string>
     <string name="processMorphologyDilatation">Dilatation</string>
     <string name="processMorphologyErosion">Erosion</string>
-    <string name="processMorphologyOuverture">Ouverture</string>
-    <string name="processMorphologyFermeture">Fermeture</string>
 
     <string name="processFilterChooserTitle">Filtre</string>
     <string name="processFilterConvolution">Convolution</string>

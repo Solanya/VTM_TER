@@ -81,6 +81,7 @@ public class Main extends Activity {
     public String paramInputValue;
     public int[][] paramMatrixValue;
     public int[][] paramMatrixTemp;
+    public int paramMatrixNorme;
     public boolean isMatrixValid;
 
     public boolean cancelled = false;
@@ -263,9 +264,7 @@ public class Main extends Activity {
                     processMorphologyChooser.setTitle(R.string.processMorphologyChooserTitle);
                     CharSequence processesMorphology[] = new CharSequence[] {
                             getString(R.string.processMorphologyDilatation),
-                            getString(R.string.processMorphologyErosion),
-                            getString(R.string.processMorphologyOuverture),
-                            getString(R.string.processMorphologyFermeture)
+                            getString(R.string.processMorphologyErosion)
                     };
                     processMorphologyChooser.setItems(processesMorphology, new DialogInterface.OnClickListener() {
                         @Override
@@ -284,28 +283,6 @@ public class Main extends Activity {
                             // Erosion
                             else if (whichProcess == 1) {
                                 imageProcess = R.string.processMorphologyErosion;
-
-                                disableParamBar1();
-                                disableParamBar2();
-                                disableParamBar3();
-                                disableParamImg();
-                                disableParamInput();
-                                disableParamMatrix();
-                            }
-                            // Ouverture
-                            else if (whichProcess == 2) {
-                                imageProcess = R.string.processMorphologyOuverture;
-
-                                disableParamBar1();
-                                disableParamBar2();
-                                disableParamBar3();
-                                disableParamImg();
-                                disableParamInput();
-                                disableParamMatrix();
-                            }
-                            // Fermeture
-                            else if (whichProcess == 3) {
-                                imageProcess = R.string.processMorphologyFermeture;
 
                                 disableParamBar1();
                                 disableParamBar2();
@@ -902,9 +879,6 @@ public class Main extends Activity {
 
 
             for (int x=0; x<imageWidth; x++){
-                /*for (int y=0; y<imageHeight; y++){
-                    pixelsOld[x][y] = pixelsCurrent[x][y];
-                }*/
                 System.arraycopy(pixelsCurrent[x],0,pixelsOld[x],0,imageHeight);
             }
 
@@ -968,11 +942,9 @@ public class Main extends Activity {
             else if (imageProcess == R.string.processMorphologyErosion) {
                 applyErosion();
             }
-            else if (imageProcess == R.string.processMorphologyOuverture) {
-                applyOuverture();
-            }
-            else if (imageProcess == R.string.processMorphologyFermeture) {
-                applyFermeture();
+            // Filtres
+            else if (imageProcess == R.string.processFilterConvolution) {
+                applyConvolution();
             }
             return null;
         }
@@ -1289,8 +1261,8 @@ public class Main extends Activity {
                 min = 255*3;
                 indx = x;
                 indy = y;
-                for(int i = x - 1;i < x + 1;i++)
-                    for(int j = y - 1;j < y + 1;j++)
+                for(int i = x - 1;i < x + 2;i++)
+                    for(int j = y - 1;j < y + 2;j++)
                     {
                         if(i != -1 && i != imageWidth && j != -1 && j != imageHeight)
                         {
@@ -1319,8 +1291,8 @@ public class Main extends Activity {
                 max = 0;
                 indx = x;
                 indy = y;
-                for(int i = x - 1;i < x + 1;i++)
-                    for(int j = y - 1;j < y + 1;j++)
+                for(int i = x - 1;i < x + 2;i++)
+                    for(int j = y - 1;j < y + 2;j++)
                     {
                         if(i != -1 && i != imageWidth && j != -1 && j != imageHeight)
                         {
@@ -1336,6 +1308,54 @@ public class Main extends Activity {
                 toPixelRGB(x,y,Color.red(pixelsOld[indx][indy]),Color.green(pixelsOld[indx][indy]),Color.blue(pixelsOld[indx][indy]));
             }
     }
+
+
+    // **********  Fonction Convolution  **********
+
+
+    public void applyConvolution() {
+        int sum_r,sum_g,sum_b;
+        int convR, convG, convB;
+
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+            {
+
+                // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
+
+                toPixelCopy(x,y,pixelsOld[x][y]);
+            }
+
+        for(int x = 2;x < imageWidth - 2;x++)
+            for(int y = 2;y < imageHeight - 2;y++)
+            {
+                sum_r = 0;
+                sum_g = 0;
+                sum_b = 0;
+                for(int i = x - 2;i < x + 2;i++)
+                    for(int j = y - 2;j < y + 2;j++)
+                    {
+                        sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                        sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                        sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                    }
+
+                convR = (int)(sum_r/(float)paramMatrixNorme);
+                convR = max_2(convR, 0);
+                convR = min_2(convR, 255);
+
+                convG = (int)(sum_g/(float)paramMatrixNorme);
+                convG = max_2(convG, 0);
+                convG = min_2(convG, 255);
+
+                convB = (int)(sum_b/(float)paramMatrixNorme);
+                convB = max_2(convB, 0);
+                convB = min_2(convB, 255);
+
+                toPixelRGB(x,y,convR,convG,convB);
+            }
+    }
+
 
     /**************************************************************
 
@@ -1375,6 +1395,22 @@ public class Main extends Activity {
         if ((progressCount%1000 == 0) | (progressCount == imageHeight*imageWidth)) {
             progressBarControl.setProgress(progressCount);
         }
+    }
+
+    int max_2(int a,int b)
+    {
+        if (a > b)
+            return a;
+        else
+            return b;
+    }
+
+    int min_2(int a,int b)
+    {
+        if (a < b)
+            return a;
+        else
+            return b;
     }
 
     public void btUndoClick(View v) {
@@ -1473,7 +1509,7 @@ public class Main extends Activity {
                             paramMatrixTemp[i][j] = m_int;
 
                         } else {
-                            messageBox.setText(String.format(getString(R.string.valueMatrixError), i + 1, j + 1));
+                            messageBox.setText(String.format(getString(R.string.valueMatrixBoundsError), i + 1, j + 1));
                             isMatrixValid = false;
                             break;
                         }
@@ -1481,10 +1517,20 @@ public class Main extends Activity {
                 }
 
                 if (isMatrixValid) {
-                    for (int i = 0; i < 5; i++) {
-                        System.arraycopy(paramMatrixTemp[i], 0, paramMatrixValue[i], 0, 5);
+
+                    paramMatrixNorme = 0;
+                    for (int i = 0; i<5; i++)
+                        for (int j=0; j<5; j++)
+                            paramMatrixNorme += paramMatrixValue[i][j];
+
+                    if (paramMatrixNorme != 0) {
+                        for (int i = 0; i < 5; i++) {
+                            System.arraycopy(paramMatrixTemp[i], 0, paramMatrixValue[i], 0, 5);
+                        }
+                        messageBox.setText(R.string.valueMatrixSuccess);
+                    } else {
+                        messageBox.setText(R.string.valueMatrixNormError);
                     }
-                    messageBox.setText(R.string.valueMatrixSuccess);
                 }
             }
         });
