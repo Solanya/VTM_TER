@@ -961,6 +961,19 @@ public class Main extends Activity {
             else if (imageProcess == R.string.processHistogramExpansion) {
                 applyExpansion();
             }
+            // Morphologie
+            else if (imageProcess == R.string.processMorphologyDilatation) {
+                applyDilatation();
+            }
+            else if (imageProcess == R.string.processMorphologyErosion) {
+                applyErosion();
+            }
+            else if (imageProcess == R.string.processMorphologyOuverture) {
+                applyOuverture();
+            }
+            else if (imageProcess == R.string.processMorphologyFermeture) {
+                applyFermeture();
+            }
             return null;
         }
         @Override
@@ -1265,6 +1278,64 @@ public class Main extends Activity {
     }
 
 
+    // **********  Fonction Dilatation  **********
+
+    public void applyDilatation(){
+        int min,indx,indy,sum;
+
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+            {
+                min = 255*3;
+                indx = x;
+                indy = y;
+                for(int i = x - 1;i < x + 1;i++)
+                    for(int j = y - 1;j < y + 1;j++)
+                    {
+                        if(i != -1 && i != imageWidth && j != -1 && j != imageHeight)
+                        {
+                            sum = Color.red(pixelsOld[i][j]) + Color.green(pixelsOld[i][j]) + Color.blue(pixelsOld[i][j]);
+                            if(sum < min)
+                            {
+                                min = sum;
+                                indx = i;
+                                indy = j;
+                            }
+                        }
+                    }
+                toPixelRGB(x,y,Color.red(pixelsOld[indx][indy]),Color.green(pixelsOld[indx][indy]),Color.blue(pixelsOld[indx][indy]));
+            }
+    }
+
+
+    // **********  Fonction Erosion  **********
+
+    public void applyErosion(){
+        int max,indx,indy,sum;
+
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+            {
+                max = 0;
+                indx = x;
+                indy = y;
+                for(int i = x - 1;i < x + 1;i++)
+                    for(int j = y - 1;j < y + 1;j++)
+                    {
+                        if(i != -1 && i != imageWidth && j != -1 && j != imageHeight)
+                        {
+                            sum = Color.red(pixelsOld[i][j]) + Color.green(pixelsOld[i][j]) + Color.blue(pixelsOld[i][j]);
+                            if(sum > max)
+                            {
+                                max = sum;
+                                indx = i;
+                                indy = j;
+                            }
+                        }
+                    }
+                toPixelRGB(x,y,Color.red(pixelsOld[indx][indy]),Color.green(pixelsOld[indx][indy]),Color.blue(pixelsOld[indx][indy]));
+            }
+    }
 
     /**************************************************************
 
