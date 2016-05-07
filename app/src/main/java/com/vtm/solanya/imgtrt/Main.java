@@ -241,7 +241,7 @@ public class Main extends Activity {
 
                                 imageProcess = R.string.processHistogramExpansion;
 
-                                enableParamBar1(50, "#ffffff");
+                                enableParamBar1(49, "#ffffff");
 
                                 disableParamBar2();
                                 disableParamBar3();
@@ -948,6 +948,7 @@ public class Main extends Activity {
     {
         @Override
         protected Void doInBackground(Void... params) {
+            // Modification d'histogramme
             if (imageProcess == R.string.processHistogramSeuil) {
                 applySeuil();
             }
@@ -956,6 +957,9 @@ public class Main extends Activity {
             }
             else if (imageProcess == R.string.processHistogramEgalisation) {
                 applyEgalisation();
+            }
+            else if (imageProcess == R.string.processHistogramExpansion) {
+                applyExpansion();
             }
             return null;
         }
@@ -1026,15 +1030,7 @@ public class Main extends Activity {
 
         int nbPixel = imageWidth * imageHeight;
         int nbPixelRef = referenceWidth * referenceHeight;
-        int sum_r,sum_g,sum_b;
-
-        /*for(i = 0;i < 256;i++)
-            for(j = 0;j < 3;j++)
-                ddp[i][j] = 0;
-
-        for(i = 0;i < 256;i++)
-            for(j = 0;j < 3;j++)
-                ddp2[i][j] = 0*/
+        int specR,specG,specB;
 
         for(int x = 0 ; x < imageWidth ; x++)
             for(int y = 0 ; y < imageHeight ; y++)
@@ -1052,47 +1048,51 @@ public class Main extends Activity {
                 ddpRef[Color.blue(pixelsReference[x][y])][2]++;
             }
 
-        for(int i = 0 ; i < 256 ; i++)
+        for(int j = 0 ; j < 3 ; j++) {
+            ddpImg[0][j] = ddpImg[0][j] / (float)nbPixel;
+            ddpRef[0][j] = ddpRef[0][j] / (float)nbPixelRef;
+        }
+
+        for(int i = 1 ; i < 256 ; i++)
             for(int j = 0 ; j < 3 ; j++) {
                 ddpImg[i][j] = ddpImg[i][j] / (float)nbPixel;
                 ddpRef[i][j] = ddpRef[i][j] / (float)nbPixelRef;
-
-            }
-
-        for(int i = 1 ; i < 256 ; i++) {
-            for (int j = 0; j < 3; j++) {
                 ddpImg[i][j] += ddpImg[i - 1][j];
                 ddpRef[i][j] += ddpRef[i - 1][j];
-
-                System.out.println(i+" "+j+" "+ddpImg[i][j]+" "+ddpRef[i][j]);
             }
-        }
 
         for (int x = 0; x < imageWidth; x++) {
             for (int y = 0; y < imageHeight; y++) {
 
-                sum_r = (int)(ddpImg[Color.red(pixelsOld[x][y])][0] * 255);
-                sum_g = (int)(ddpImg[Color.green(pixelsOld[x][y])][1] * 255);
-                sum_b = (int)(ddpImg[Color.blue(pixelsOld[x][y])][2] * 255);
-                toPixelTempRGB(x,y,sum_r,sum_g,sum_b);
+                specR = (int)(ddpImg[Color.red(pixelsOld[x][y])][0] * 255);
+                specG = (int)(ddpImg[Color.green(pixelsOld[x][y])][1] * 255);
+                specB = (int)(ddpImg[Color.blue(pixelsOld[x][y])][2] * 255);
+                toPixelTempRGB(x,y,specR,specG,specB);
             }
         }
 
-        sum_b = 255;
-        sum_g = 255;
-        sum_r = 255;
+        specR = 0;
+        specG = 0;
+        specB = 0;
 
         for (int x = 0; x < imageWidth; x++) {
             for (int y = 0; y < imageHeight; y++) {
-                for (int i = 0; i < 256; i++) {
-                    if ((255 * ddpRef[i][0]) < Color.red(pixelsCurrent[x][y]))
-                        sum_r = i;
-                    if ((255 * ddpRef[i][1]) < Color.green(pixelsCurrent[x][y]))
-                        sum_g = i;
-                    if ((255 * ddpRef[i][2]) < Color.blue(pixelsCurrent[x][y]))
-                        sum_b = i;
-                }
-                toPixelRGB(x, y, sum_r, sum_g, sum_b);
+                for (int i = 0; i < 256; i++)
+                    if ((255 * ddpRef[i][0]) > Color.red(pixelsCurrent[x][y])) {
+                        specR = i;
+                        break;
+                    }
+                for (int i = 0; i < 256; i++)
+                    if ((255 * ddpRef[i][1]) > Color.green(pixelsCurrent[x][y])){
+                        specG = i;
+                        break;
+                    }
+                for (int i = 0; i < 256; i++)
+                    if ((255 * ddpRef[i][2]) > Color.blue(pixelsCurrent[x][y])){
+                        specB = i;
+                        break;
+                    }
+                toPixelRGB(x, y, specR, specG, specB);
             }
         }
 
@@ -1134,6 +1134,134 @@ public class Main extends Activity {
                 egalB = (int)(255 * ddp[Color.blue(pixelsOld[x][y])][2]);
                 toPixelRGB(x, y, egalR, egalG, egalB);
             }
+    }
+
+
+    // **********  Fonction Expansion  **********
+
+
+    public void applyExpansion(){
+        float alphaR,alphaG,alphaB,betaR,betaG,betaB;
+        int seuil = (int)(imageWidth * imageHeight * paramBarValue1 * 0.01);
+        int sum,max_r,min_r,max_g,min_g,max_b,min_b;
+
+        min_r = 0;
+        max_r = 0;
+        min_g = 0;
+        max_g = 0;
+        min_b = 0;
+        max_b = 0;
+
+        int[][] hist = new int[256][3];
+
+        for(int x = 0;x < imageWidth;x++)
+            for(int y = 0;y < imageHeight;y++)
+            {
+                hist[Color.red(pixelsOld[x][y])][0]++;
+                hist[Color.green(pixelsOld[x][y])][1]++;
+                hist[Color.blue(pixelsOld[x][y])][2]++;
+            }
+
+
+        sum = 0;
+        for(int i = 0;i < 256;i++)
+        {
+            sum += hist[i][0];
+            if(sum > seuil)
+            {
+                min_r = i;
+                break;
+            }
+        }
+
+        sum = 0;
+        for(int i = 255;i > -1;i--)
+        {
+            sum += hist[i][0];
+            if(sum > seuil)
+            {
+                max_r = i;
+                break;
+            }
+        }
+
+        sum = 0;
+        for(int i = 0;i < 256;i++)
+        {
+            sum += hist[i][1];
+            if(sum > seuil)
+            {
+                min_g = i;
+                break;
+            }
+        }
+
+        sum = 0;
+        for(int i = 255;i > -1;i--)
+        {
+            sum += hist[i][1];
+            if(sum > seuil)
+            {
+                max_g = i;
+                break;
+            }
+        }
+
+        sum = 0;
+        for(int i = 0;i < 256;i++)
+        {
+            sum += hist[i][2];
+            if(sum > seuil)
+            {
+                min_b = i;
+                break;
+            }
+        }
+
+        sum = 0;
+        for(int i = 255;i > -1;i--)
+        {
+            sum += hist[i][2];
+            if(sum > seuil)
+            {
+                max_b = i;
+                break;
+            }
+        }
+
+
+        for(int x = 0;x < imageWidth;x++)
+            for(int y = 0;y < imageHeight;y++)
+            {
+                if(Color.red(pixelsCurrent[x][y]) < min_r)
+                    toPixelTempRGB(x, y, min_r, Color.green(pixelsCurrent[x][y]), Color.blue(pixelsCurrent[x][y]));
+                if(Color.red(pixelsCurrent[x][y]) > max_r)
+                    toPixelTempRGB(x, y, max_r, Color.green(pixelsCurrent[x][y]), Color.blue(pixelsCurrent[x][y]));
+
+                if(Color.green(pixelsCurrent[x][y]) < min_g)
+                    toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), min_g, Color.blue(pixelsCurrent[x][y]));
+                if(Color.green(pixelsCurrent[x][y]) > max_g)
+                    toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), max_g, Color.blue(pixelsCurrent[x][y]));
+
+                if(Color.blue(pixelsCurrent[x][y]) < min_b)
+                    toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), Color.green(pixelsCurrent[x][y]), min_b);
+                if(Color.blue(pixelsCurrent[x][y]) > max_b)
+                    toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), Color.green(pixelsCurrent[x][y]), max_b);
+            }
+
+
+        alphaR = (-255f * min_r) / (float)(max_r - min_r);
+        alphaG = (-255f * min_g) / (float)(max_g - min_g);
+        alphaB = (-255f * min_b) / (float)(max_b - min_b);
+
+        betaR = 255f / (float)(max_r - min_r);
+        betaG = 255f / (float)(max_g - min_g);
+        betaB = 255f / (float)(max_b - min_b);
+
+        for(int x = 0;x < imageWidth;x++)
+            for(int y = 0;y < imageHeight;y++)
+                toPixelRGB(x, y, (int)(Color.red(pixelsCurrent[x][y]) * betaR + alphaR), (int)(Color.green(pixelsCurrent[x][y]) * betaG + alphaG), (int)(Color.blue(pixelsCurrent[x][y]) * betaB + alphaB));
+
     }
 
 
