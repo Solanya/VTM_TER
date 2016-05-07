@@ -129,7 +129,7 @@ public class Main extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        messageBox = (TextView) findViewById(R.id.textBox);
+        messageBox = (TextView) findViewById(R.id.messageBox);
         messageBox.setTextColor(Color.WHITE);
         messageBox.setText(R.string.welcome);
 

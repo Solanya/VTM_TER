@@ -23,7 +23,7 @@
 
     <string name="valueMatrixWarning">Intervalle de valeurs : [-99;99]</string>
     <string name="valueMatrixBoundsError">Erreur : la valeur en colonne %1$d et ligne %2$d est hors-limite.</string>
-    <string name="valueMatrixNormError">Erreur : la valeur en colonne %1$d et ligne %2$d est hors-limite.</string>
+    <string name="valueMatrixNormError">Erreur : la norme de la grille vaut 0.</string>
     <string name="valueMatrixSuccess">Valeurs de la grille modifiées.</string>
 
     <string name="imageEmpty">Pas d\'image.</string>
