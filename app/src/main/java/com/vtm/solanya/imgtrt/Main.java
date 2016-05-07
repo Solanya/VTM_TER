@@ -946,6 +946,9 @@ public class Main extends Activity {
             else if (imageProcess == R.string.processFilterConvolution) {
                 applyConvolution();
             }
+            else if (imageProcess == R.string.processFilterKirsch) {
+                applyKirsch();
+            }
             return null;
         }
         @Override
@@ -1357,6 +1360,96 @@ public class Main extends Activity {
     }
 
 
+
+    // **********  Fonction Detection de contours (Kirsch)  **********
+
+
+    public void applyKirsch() {
+        int max,indx,indy,sum_r,sum_g,sum_b;
+
+        for (int x = 0; x < imageWidth; x++)
+            for (int y = 0; y < imageHeight; y++)
+            {
+                toPixelCopy(x,y,pixelsOld[x][y]);
+            }
+
+        int[][] gauss = {{2,4,5,4,2},{4,9,12,9,4},{5,12,15,12,15},{4,9,12,9,4},{2,4,5,4,2}};
+
+        int[][][] grad_temp = new int[imageWidth][imageHeight][3];
+
+        float div = 159;
+        progressBarControl.setMax(imageHeight*imageWidth*2);
+
+        for(int x = 2;x < imageWidth - 2;x++)
+            for(int y = 2;y < imageHeight - 2;y++)
+            {
+                sum_r = 0;
+                sum_g = 0;
+                sum_b = 0;
+                for(int i = x - 2;i < x + 2;i++)
+                    for(int j = y - 2;j < y + 2;j++)
+                    {
+                        sum_r += gauss[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                        sum_g += gauss[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                        sum_b += gauss[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                    }
+                toPixelRGB(x,y,(int)(sum_r/div),(int)(sum_g/div),(int)(sum_b/div));
+            }
+
+        for(int x = 1;x < imageWidth - 1;x++)
+            for(int y = 1;y < imageHeight - 1;y++) {
+                for (int k = 0; k < 3; k++)
+                    grad_temp[x][y][k] = kirsch(x, y, k);
+                progressUpdate();
+            }
+
+        for(int x = 1;x < imageWidth - 1;x++)
+            for(int y = 1;y < imageHeight - 1;y++)
+                toPixelTempRGB(x,y,grad_temp[x][y][0],grad_temp[x][y][1],grad_temp[x][y][2]);
+    }
+
+
+    int kirsch(int i,int j,int color)
+    {
+        int k = 5 * (getPixelsCurrentColor(i - 1, j - 1, color) + getPixelsCurrentColor(i, j - 1, color) + getPixelsCurrentColor(i + 1, j - 1, color));
+        k += -3 * (getPixelsCurrentColor(i - 1, j, color) + getPixelsCurrentColor(i + 1, j, color) + getPixelsCurrentColor(i - 1, j + 1, color) + getPixelsCurrentColor(i, j + 1, color) + getPixelsCurrentColor(i + 1, j + 1, color));
+
+        int g1,g2,g3,g4,g5,g6,g7,g8;
+
+        g1 = k;
+
+        g2 = k + -8 * getPixelsCurrentColor(i + 1, j - 1, color) + 8 * getPixelsCurrentColor(i - 1, j, color);
+
+        g3 = k + -8 * getPixelsCurrentColor(i + 1, j - 1, color) + 8 * getPixelsCurrentColor(i - 1, j, color) + -8 * getPixelsCurrentColor(i, j - 1, color) + 8 * getPixelsCurrentColor(i - 1, j + 1, color);
+
+        g4 = k +  -8*(getPixelsCurrentColor(i + 1, j - 1, color) + getPixelsCurrentColor(i, j - 1, color) + getPixelsCurrentColor(i - 1, j - 1, color)) + 8*(getPixelsCurrentColor(i - 1, j, color) + getPixelsCurrentColor(i - 1, j + 1, color) + getPixelsCurrentColor(i, j + 1, color));
+
+        g5 = k +  -8*(getPixelsCurrentColor(i + 1, j - 1, color) + getPixelsCurrentColor(i, j - 1, color) + getPixelsCurrentColor(i - 1, j - 1, color)) + 8*(getPixelsCurrentColor(i - 1, j + 1, color) + getPixelsCurrentColor(i, j + 1, color)+ getPixelsCurrentColor(i + 1, j + 1, color));
+
+        g6 = k +  -8*(getPixelsCurrentColor(i + 1, j - 1, color) + getPixelsCurrentColor(i, j - 1, color) + getPixelsCurrentColor(i - 1, j - 1, color)) + 8*(getPixelsCurrentColor(i + 1, j, color) + getPixelsCurrentColor(i, j + 1, color)+ getPixelsCurrentColor(i + 1, j + 1, color));
+
+        g7 = k +  -8*(getPixelsCurrentColor(i, j - 1, color) + getPixelsCurrentColor(i - 1, j - 1, color)) + 8*(getPixelsCurrentColor(i + 1, j, color) + getPixelsCurrentColor(i + 1, j + 1, color));
+
+        g8 = k +  -8*(getPixelsCurrentColor(i - 1, j - 1, color)) + 8*(getPixelsCurrentColor(i + 1, j, color) );
+
+        return max_8(g1,g2,g3,g4,g5,g6,g7,g8);
+    }
+
+    int getPixelsCurrentColor(int i, int j, int color)
+    {
+        switch(color)
+        {
+            case 0 :
+                return Color.red(pixelsCurrent[i][j]);
+            case 1 :
+                return Color.green(pixelsCurrent[i][j]);
+            case 2 :
+                return Color.blue(pixelsCurrent[i][j]);
+            default :
+                return 0;
+        }
+    }
+
     /**************************************************************
 
 
@@ -1392,7 +1485,7 @@ public class Main extends Activity {
 
     public void progressUpdate(){
         progressCount += 1;
-        if ((progressCount%1000 == 0) | (progressCount == imageHeight*imageWidth)) {
+        if ((progressCount%1000 == 0) | (progressCount == progressBarControl.getMax())) {
             progressBarControl.setProgress(progressCount);
         }
     }
@@ -1411,6 +1504,11 @@ public class Main extends Activity {
             return a;
         else
             return b;
+    }
+
+    int max_8(int a,int b,int c,int d,int e,int f,int g,int h)
+    {
+        return max_2(max_2(max_2(a,b),max_2(c,d)),max_2(max_2(e,f),max_2(g,h)));
     }
 
     public void btUndoClick(View v) {
