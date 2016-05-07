@@ -882,26 +882,6 @@ public class Main extends Activity {
         processCategoryChooser.show();
     }
 
-    private class AsyncApplyTask extends AsyncTask<Void, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(Void... params) {
-            if (imageProcess == R.string.processHistogramSeuil) {
-                applySeuil();
-            }
-            else if (imageProcess == R.string.processFlou) {
-
-            }
-            return null;
-        }
-        @Override
-        protected void onPostExecute(Void result) {
-            Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, imageWidth, imageHeight, bitmapConfig);
-            displayBox.setImageBitmap(bitmapNew);
-            ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
-        }
-    }
-
     public void btApplyClick(View v) {
 
         if (imageProcess == R.string.emptyProcess){
@@ -945,6 +925,48 @@ public class Main extends Activity {
         findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
         cancelled = false;
     }
+
+
+    /*********************************************************
+
+
+
+
+                        SECTION TRAITEMENTS
+
+
+
+
+     ********************************************************/
+
+
+
+    // Fonction principale
+
+
+    private class AsyncApplyTask extends AsyncTask<Void, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (imageProcess == R.string.processHistogramSeuil) {
+                applySeuil();
+            }
+            else if (imageProcess == R.string.processHistogramSpecification) {
+                applySpecification();
+            }
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, imageWidth, imageHeight, bitmapConfig);
+            displayBox.setImageBitmap(bitmapNew);
+            ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
+        }
+    }
+
+
+    // Fonction Seuil
+
 
     public void applySeuil(){
 
@@ -991,45 +1013,100 @@ public class Main extends Activity {
 
     }
 
-    /*public void applyFlou(){
+    public void applySpecification(){
+        float[][] ddpImg = new float[256][3];
+        float[][] ddpRef = new float[256][3];
 
-        int flouWindow = paramBarValue1;
+        int nbPixel = imageWidth * imageHeight;
+        int nbPixelRef = referenceWidth * referenceHeight;
+        int sum_r,sum_g,sum_b;
 
-        int rFlou, gFlou, bFlou;
+        /*for(i = 0;i < 256;i++)
+            for(j = 0;j < 3;j++)
+                ddp[i][j] = 0;
+
+        for(i = 0;i < 256;i++)
+            for(j = 0;j < 3;j++)
+                ddp2[i][j] = 0*/
+
+        for(int x = 0 ; x < imageWidth ; x++)
+            for(int y = 0 ; y < imageHeight ; y++)
+            {
+                ddpImg[Color.red(pixelsOld[x][y])][0]++;
+                ddpImg[Color.green(pixelsOld[x][y])][1]++;
+                ddpImg[Color.blue(pixelsOld[x][y])][2]++;
+            }
+
+        for(int x = 0 ; x < referenceWidth ; x++)
+            for(int y = 0 ; y < referenceHeight ; y++)
+            {
+                ddpRef[Color.red(pixelsReference[x][y])][0]++;
+                ddpRef[Color.green(pixelsReference[x][y])][1]++;
+                ddpRef[Color.blue(pixelsReference[x][y])][2]++;
+            }
+
+        for(int i = 0 ; i < 256 ; i++)
+            for(int j = 0 ; j < 3 ; j++) {
+                ddpImg[i][j] = ddpImg[i][j] / (float)nbPixel;
+                ddpRef[i][j] = ddpRef[i][j] / (float)nbPixelRef;
+
+            }
+
+        for(int i = 1 ; i < 256 ; i++) {
+            for (int j = 0; j < 3; j++) {
+                ddpImg[i][j] += ddpImg[i - 1][j];
+                ddpRef[i][j] += ddpRef[i - 1][j];
+
+                System.out.println(i+" "+j+" "+ddpImg[i][j]+" "+ddpRef[i][j]);
+            }
+        }
 
         for (int x = 0; x < imageWidth; x++) {
             for (int y = 0; y < imageHeight; y++) {
 
-                // Si l'image a déjà été rentrée dans la table pixelsCurrent, on ne la relit pas.
-
-                toPixelCopy(x,y,pixelsOld[x][y]);
+                sum_r = (int)(ddpImg[Color.red(pixelsOld[x][y])][0] * 255);
+                sum_g = (int)(ddpImg[Color.green(pixelsOld[x][y])][1] * 255);
+                sum_b = (int)(ddpImg[Color.blue(pixelsOld[x][y])][2] * 255);
+                toPixelTempRGB(x,y,sum_r,sum_g,sum_b);
             }
         }
 
-        for (int x = flouWindow; x < imageWidth-flouWindow; x++) {
-            for (int y = flouWindow; y < imageHeight-flouWindow; y++) {
+        sum_b = 255;
+        sum_g = 255;
+        sum_r = 255;
 
-                rFlou = 0;
-                gFlou = 0;
-                bFlou = 0;
-
-                // On applique le flou en lisant les couleurs en [0..255]
-                for (int i = -flouWindow; i < flouWindow + 1; i++){
-                    for (int j = -flouWindow; j < flouWindow + 1; j++){
-                        rFlou += Color.red(pixelsOld[x + i][y + j]);
-                        gFlou += Color.green(pixelsOld[x + i][y + j]);
-                        bFlou += Color.blue(pixelsOld[x + i][y + j]);
-                    }
+        for (int x = 0; x < imageWidth; x++) {
+            for (int y = 0; y < imageHeight; y++) {
+                for (int i = 0; i < 256; i++) {
+                    if ((255 * ddpRef[i][0]) < Color.red(pixelsCurrent[x][y]))
+                        sum_r = i;
+                    if ((255 * ddpRef[i][1]) < Color.green(pixelsCurrent[x][y]))
+                        sum_g = i;
+                    if ((255 * ddpRef[i][2]) < Color.blue(pixelsCurrent[x][y]))
+                        sum_b = i;
                 }
-
-                rFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
-                gFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
-                bFlou /= java.lang.Math.pow(2 * flouWindow + 1, 2);
-
-                toPixelRGB(x, y, rFlou, gFlou, bFlou);
+                toPixelRGB(x, y, sum_r, sum_g, sum_b);
             }
         }
-    }*/
+
+    }
+
+
+
+    /**************************************************************
+
+
+
+
+
+                    FIN DE LA SECTION TRAITEMENTS
+
+
+
+
+
+     *************************************************************/
+
 
     public void toPixelCopy(int x, int y, int C){
         pixelsTemp[imageWidth * y + x] = C;
@@ -1041,6 +1118,12 @@ public class Main extends Activity {
         pixelsTemp[imageWidth * y + x] = Color.rgb(R,G,B);
         pixelsCurrent[x][y] = pixelsTemp[imageWidth * y + x];
         progressUpdate();
+    }
+
+    public void toPixelTempRGB(int x, int y, int R, int G, int B){
+        pixelsTemp[imageWidth * y + x] = Color.rgb(R,G,B);
+        pixelsCurrent[x][y] = pixelsTemp[imageWidth * y + x];
+        // NO PROGRESS UPDATE !
     }
 
     public void progressUpdate(){
