@@ -1338,8 +1338,8 @@ public class Main extends Activity {
                 sum_r = 0;
                 sum_g = 0;
                 sum_b = 0;
-                for(int i = x - 2;i < x + 2;i++)
-                    for(int j = y - 2;j < y + 2;j++)
+                for(int i = x - 2;i < x + 3;i++)
+                    for(int j = y - 2;j < y + 3;j++)
                     {
                         sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
                         sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
@@ -1390,8 +1390,8 @@ public class Main extends Activity {
                 sum_g = 0;
                 sum_b = 0;
 
-                for(int i = x - 2;i < x + 2;i++)
-                    for(int j = y - 2;j < y + 2;j++)
+                for(int i = x - 2;i < x + 3;i++)
+                    for(int j = y - 2;j < y + 3;j++)
                     {
                         sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
                         sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
@@ -1429,8 +1429,8 @@ public class Main extends Activity {
                 sum_g = 0;
                 sum_b = 0;
 
-                for(int i = x - 2;i < x + 2;i++)
-                    for(int j = y - 2;j < y + 2;j++)
+                for(int i = x - 2;i < x + 3;i++)
+                    for(int j = y - 2;j < y + 3;j++)
                     {
                         sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
                         sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
@@ -1472,8 +1472,8 @@ public class Main extends Activity {
                 sum_r = 0;
                 sum_g = 0;
                 sum_b = 0;
-                for(int i = x - 2;i < x + 2;i++)
-                    for(int j = y - 2;j < y + 2;j++)
+                for(int i = x - 2;i < x + 3;i++)
+                    for(int j = y - 2;j < y + 3;j++)
                     {
                         sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
                         sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
