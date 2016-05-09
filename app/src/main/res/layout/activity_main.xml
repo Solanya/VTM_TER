@@ -7,6 +7,27 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="#17456f">
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#232323"
+        android:layout_weight="0.35"
+        android:id="@+id/imageLoading"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible"
+            android:id="@+id/imageLoadProgress"
+            android:layout_gravity="center"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:progress="0"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp" />
+
+    </FrameLayout>
+
     <ImageView
         android:id="@+id/imageDisplay"
         android:layout_width="fill_parent"
@@ -337,6 +358,13 @@
                 android:layout_marginRight="5dp"
                 android:max="1"
                 android:progress="0" />
+
+            <ImageButton
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:id="@+id/btCancel"
+                android:background="@mipmap/ic_cancel"
+                android:layout_gravity="center" />
 
         </LinearLayout>
 

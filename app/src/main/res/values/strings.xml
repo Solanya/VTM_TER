@@ -10,9 +10,19 @@
     <string name="dialogOK">OK</string>
     <string name="dialogCancel">Annuler</string>
 
+    <string name="loading">Chargement en cours…</string>
+    <string name="loadSuccess">Chargement de l\'image effectué.</string>
+    <string name="loadCancelled">Chargement de l\'image annulé.</string>
+    <string name="loadError">Erreur durant le chargement de l\'image.</string>
+    <string name="camSuccess">Prise de photo effectuée.</string>
     <string name="camCancelled">Prise de photo annulée.</string>
     <string name="camError">Erreur durant la prise de photo.</string>
-    <string name="saveError">Erreur durant la sauvegarde.</string>
+    <string name="saveIntDirError">Erreur durant la création du dossier.</string>
+    <string name="saveIntFileError">Erreur durant la création du fichier.</string>
+    <string name="saveExtDirError">Erreur durant la création du dossier.</string>
+    <string name="saveExtFileError">Erreur durant la création du fichier.</string>
+    <string name="saveStoError">Erreur de stockage.</string>
+    <string name="saveImgError">Erreur durant la sauvegarde de l\'image.</string>
     <string name="saveSuccess">Sauvegarde effectuée.</string>
 
     <string name="valueChangeTitle">Changer la valeur du paramètre</string>
@@ -34,6 +44,7 @@
 
     <string name="emptyProcess">Pas de traitement sélectionné.</string>
     <string name="applyingProcess">%1$s en cours…</string>
+    <string name="cancelledProcess">Traitement annulé.</string>
 
     <string name="processCategoryChooserTitle">Choix de traitement</string>
     <string name="processCategoryHistogram">Histogramme</string>

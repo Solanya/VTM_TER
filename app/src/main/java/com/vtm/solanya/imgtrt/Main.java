@@ -3,12 +3,12 @@ package com.vtm.solanya.imgtrt;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -32,9 +32,13 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Calendar;
 
 public class Main extends Activity {
     //constante pour définir l'id du type image
@@ -54,6 +58,7 @@ public class Main extends Activity {
     public int progressCount = 0;
 
     public ProgressBar progressBarControl = null;
+    public ProgressBar progressLoadBarControl = null;
 
     public TableRow paramBarControlRow1 = null;
     public TableRow paramBarControlRow2 = null;
@@ -99,6 +104,8 @@ public class Main extends Activity {
     public AlertDialog.Builder processFilterChooser;
     public AlertDialog.Builder processCosmeticChooser;
 
+    public AsyncApplyTask applyTask;
+
 
 
     // TODO : Add file permissions to save images for Android 6.0+
@@ -139,6 +146,7 @@ public class Main extends Activity {
         displayBox = (ImageView) findViewById(R.id.imageDisplay);
 
         progressBarControl = (ProgressBar) findViewById(R.id.progressBar);
+        progressLoadBarControl = (ProgressBar) findViewById(R.id.imageLoadProgress);
 
         paramBarControlRow1 = (TableRow) findViewById(R.id.paramBarRow1);
         paramBarControlRow2 = (TableRow) findViewById(R.id.paramBarRow2);
@@ -487,12 +495,21 @@ public class Main extends Activity {
             }
         });
 
-        // Bouton pour annuler/refaire le traitement
+        // Bouton pour défaire/refaire le traitement
 
         findViewById(R.id.btUndo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 btUndoClick(v);
+            }
+        });
+
+        // Bouton pour annuler le traitement en cours
+
+        findViewById(R.id.btCancel).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                btCancelClick(v);
             }
         });
 
@@ -772,41 +789,47 @@ public class Main extends Activity {
             if (!dir.exists()) {
                 boolean checkDirCreation = dir.mkdirs();
                 if (!checkDirCreation){
-                    messageBox.setText(R.string.saveError);
-                    return false;
+                    messageBox.setText(R.string.saveExtDirError);
+                    //return false;
                 }
             }
 
-            file = new File(fullPath, "image.png");
+            Calendar c = Calendar.getInstance();
+            String fileName = "otTER-"+c.get(Calendar.YEAR)+"-"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)+".png";
+
+            file = new File(fullPath+fileName);
             boolean checkFileCreation = file.createNewFile();
             if (!checkFileCreation){
-                messageBox.setText(R.string.saveError);
-                return false;
+                messageBox.setText(R.string.saveExtFileError);
+                //return false;
             }
             fOut = new FileOutputStream(file);
         } catch (Exception e) {
-            fullPath = getFilesDir().getAbsolutePath() + "/Saved Images";
+            fullPath = getFilesDir().getAbsolutePath();
 
             File dir = new File(fullPath);
             if (!dir.exists()) {
                 boolean checkDirCreation = dir.mkdirs();
                 if (!checkDirCreation){
-                    messageBox.setText(R.string.saveError);
-                    return false;
+                    messageBox.setText(R.string.saveIntDirError);
+                    //return false;
                 }
             }
 
-            file = new File(fullPath, "image.png");
+            Calendar c = Calendar.getInstance();
+            String fileName = "otTER-"+c.get(Calendar.YEAR)+"-"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)+".png";
+            file = new File(fullPath+fileName);
+
             try {
                 boolean checkFileCreation = file.createNewFile();
                 if (!checkFileCreation){
-                    messageBox.setText(R.string.saveError);
-                    return false;
+                    messageBox.setText(R.string.saveIntFileError);
+                    //return false;
                 }
                 fOut = new FileOutputStream(file);
             } catch (Exception e2) {
-                Log.e("Save Image", e.getMessage());
-                messageBox.setText(R.string.saveError);
+                Log.e("Save Image", e2.getMessage());
+                messageBox.setText(R.string.saveStoError);
                 return false;
             }
         }
@@ -814,7 +837,6 @@ public class Main extends Activity {
         try {
             if (displayBox.getDrawable() == null) {
                 messageBox.setText(R.string.imageEmpty);
-
                 return false;
             }
 
@@ -835,7 +857,7 @@ public class Main extends Activity {
 
         } catch (Exception e) {
             Log.e("Save Image", e.getMessage());
-            messageBox.setText(R.string.saveError);
+            messageBox.setText(R.string.saveImgError);
             return false;
         }
     }
@@ -844,6 +866,10 @@ public class Main extends Activity {
         ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_right);
         ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_left);
         processCategoryChooser.show();
+    }
+
+    public void btCancelClick(View v) {
+        applyTask.cancel(true);
     }
 
     public void btApplyClick(View v) {
@@ -879,7 +905,8 @@ public class Main extends Activity {
             ((ViewFlipper) findViewById(R.id.menuFlipper)).setInAnimation(this, R.anim.slide_in_from_top);
             ((ViewFlipper) findViewById(R.id.menuFlipper)).setOutAnimation(this, R.anim.slide_out_to_bottom);
 
-            new AsyncApplyTask().execute();
+            applyTask = new AsyncApplyTask();
+            applyTask.execute();
         }
 
         findViewById(R.id.btUndo).setVisibility(View.VISIBLE);
@@ -907,8 +934,11 @@ public class Main extends Activity {
 
     private class AsyncApplyTask extends AsyncTask<Void, Void, Void>
     {
+        public boolean running;
+
         @Override
         protected Void doInBackground(Void... params) {
+            running = true;
             // Modification d'histogramme
             if (imageProcess == R.string.processHistogramSeuil) {
                 applySeuil();
@@ -959,8 +989,17 @@ public class Main extends Activity {
         }
         @Override
         protected void onPostExecute(Void result) {
+            running = false;
             Bitmap bitmapNew = Bitmap.createBitmap(pixelsTemp, imageWidth, imageHeight, bitmapConfig);
             displayBox.setImageBitmap(bitmapNew);
+            ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
+        }
+
+        @Override
+        protected void onCancelled(Void result){
+            running = false;
+            messageBox.setText(R.string.cancelledProcess);
+            findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
             ((ViewFlipper) findViewById(R.id.menuFlipper)).showPrevious();
         }
     }
@@ -981,34 +1020,36 @@ public class Main extends Activity {
 
         for (int x = 0; x < imageWidth; x++) {
             for (int y = 0; y < imageHeight; y++) {
+                if (!applyTask.isCancelled()) {
+                    // On lit les 3 couleurs en [0..255]
 
-                // On lit les 3 couleurs en [0..255]
+                    red = Color.red(pixelsOld[x][y]);
+                    green = Color.green(pixelsOld[x][y]);
+                    blue = Color.blue(pixelsOld[x][y]);
 
-                red = Color.red(pixelsOld[x][y]);
-                green = Color.green(pixelsOld[x][y]);
-                blue = Color.blue(pixelsOld[x][y]);
+                    // On applique le seuil.
 
-                // On applique le seuil.
+                    if (red < seuilValueR) {
+                        RSeuil = 0;
+                    } else {
+                        RSeuil = 255;
+                    }
 
-                if (red < seuilValueR) {
-                    RSeuil = 0;
-                } else {
-                    RSeuil = 255;
+                    if (green < seuilValueG) {
+                        GSeuil = 0;
+                    } else {
+                        GSeuil = 255;
+                    }
+
+                    if (blue < seuilValueB) {
+                        BSeuil = 0;
+                    } else {
+                        BSeuil = 255;
+                    }
+
+                    toPixelRGB(x, y, RSeuil, GSeuil, BSeuil);
                 }
-
-                if (green < seuilValueG) {
-                    GSeuil = 0;
-                } else {
-                    GSeuil = 255;
-                }
-
-                if (blue < seuilValueB) {
-                    BSeuil = 0;
-                } else {
-                    BSeuil = 255;
-                }
-
-                toPixelRGB(x, y, RSeuil, GSeuil, BSeuil);
+                else return;
             }
         }
 
@@ -1071,22 +1112,25 @@ public class Main extends Activity {
 
         for (int x = 0; x < imageWidth; x++) {
             for (int y = 0; y < imageHeight; y++) {
-                for (int i = 0; i < 256; i++)
-                    if ((255 * ddpRef[i][0]) > Color.red(pixelsCurrent[x][y])) {
-                        specR = i;
-                        break;
-                    }
-                for (int i = 0; i < 256; i++)
-                    if ((255 * ddpRef[i][1]) > Color.green(pixelsCurrent[x][y])){
-                        specG = i;
-                        break;
-                    }
-                for (int i = 0; i < 256; i++)
-                    if ((255 * ddpRef[i][2]) > Color.blue(pixelsCurrent[x][y])){
-                        specB = i;
-                        break;
-                    }
-                toPixelRGB(x, y, specR, specG, specB);
+                if (!applyTask.isCancelled()) {
+                    for (int i = 0; i < 256; i++)
+                        if ((255 * ddpRef[i][0]) > Color.red(pixelsCurrent[x][y])) {
+                            specR = i;
+                            break;
+                        }
+                    for (int i = 0; i < 256; i++)
+                        if ((255 * ddpRef[i][1]) > Color.green(pixelsCurrent[x][y])) {
+                            specG = i;
+                            break;
+                        }
+                    for (int i = 0; i < 256; i++)
+                        if ((255 * ddpRef[i][2]) > Color.blue(pixelsCurrent[x][y])) {
+                            specB = i;
+                            break;
+                        }
+                    toPixelRGB(x, y, specR, specG, specB);
+                }
+                else return;
             }
         }
 
@@ -1123,10 +1167,13 @@ public class Main extends Activity {
         for(int x = 0 ; x < imageWidth ; x++)
             for(int y = 0 ; y < imageHeight ; y++)
             {
-                egalR = (int)(255 * ddp[Color.red(pixelsOld[x][y])][0]);
-                egalG = (int)(255 * ddp[Color.green(pixelsOld[x][y])][1]);
-                egalB = (int)(255 * ddp[Color.blue(pixelsOld[x][y])][2]);
-                toPixelRGB(x, y, egalR, egalG, egalB);
+                if (!applyTask.isCancelled()) {
+                    egalR = (int) (255 * ddp[Color.red(pixelsOld[x][y])][0]);
+                    egalG = (int) (255 * ddp[Color.green(pixelsOld[x][y])][1]);
+                    egalB = (int) (255 * ddp[Color.blue(pixelsOld[x][y])][2]);
+                    toPixelRGB(x, y, egalR, egalG, egalB);
+                }
+                else return;
             }
     }
 
@@ -1138,6 +1185,7 @@ public class Main extends Activity {
         float alphaR,alphaG,alphaB,betaR,betaG,betaB;
         int seuil = (int)(imageWidth * imageHeight * paramBarValue1 * 0.01);
         int sum,max_r,min_r,max_g,min_g,max_b,min_b;
+        progressBarControl.setMax(imageHeight * imageWidth * 2);
 
         min_r = 0;
         max_r = 0;
@@ -1227,20 +1275,25 @@ public class Main extends Activity {
         for(int x = 0;x < imageWidth;x++)
             for(int y = 0;y < imageHeight;y++)
             {
-                if(Color.red(pixelsCurrent[x][y]) < min_r)
-                    toPixelTempRGB(x, y, min_r, Color.green(pixelsCurrent[x][y]), Color.blue(pixelsCurrent[x][y]));
-                if(Color.red(pixelsCurrent[x][y]) > max_r)
-                    toPixelTempRGB(x, y, max_r, Color.green(pixelsCurrent[x][y]), Color.blue(pixelsCurrent[x][y]));
+                if (!applyTask.isCancelled()) {
+                    if (Color.red(pixelsCurrent[x][y]) < min_r)
+                        toPixelTempRGB(x, y, min_r, Color.green(pixelsCurrent[x][y]), Color.blue(pixelsCurrent[x][y]));
+                    if (Color.red(pixelsCurrent[x][y]) > max_r)
+                        toPixelTempRGB(x, y, max_r, Color.green(pixelsCurrent[x][y]), Color.blue(pixelsCurrent[x][y]));
 
-                if(Color.green(pixelsCurrent[x][y]) < min_g)
-                    toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), min_g, Color.blue(pixelsCurrent[x][y]));
-                if(Color.green(pixelsCurrent[x][y]) > max_g)
-                    toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), max_g, Color.blue(pixelsCurrent[x][y]));
+                    if (Color.green(pixelsCurrent[x][y]) < min_g)
+                        toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), min_g, Color.blue(pixelsCurrent[x][y]));
+                    if (Color.green(pixelsCurrent[x][y]) > max_g)
+                        toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), max_g, Color.blue(pixelsCurrent[x][y]));
 
-                if(Color.blue(pixelsCurrent[x][y]) < min_b)
-                    toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), Color.green(pixelsCurrent[x][y]), min_b);
-                if(Color.blue(pixelsCurrent[x][y]) > max_b)
-                    toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), Color.green(pixelsCurrent[x][y]), max_b);
+                    if (Color.blue(pixelsCurrent[x][y]) < min_b)
+                        toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), Color.green(pixelsCurrent[x][y]), min_b);
+                    if (Color.blue(pixelsCurrent[x][y]) > max_b)
+                        toPixelTempRGB(x, y, Color.red(pixelsCurrent[x][y]), Color.green(pixelsCurrent[x][y]), max_b);
+
+                    progressUpdate();
+                }
+                else return;
             }
 
 
@@ -1256,6 +1309,7 @@ public class Main extends Activity {
             for(int y = 0;y < imageHeight;y++)
                 toPixelRGB(x, y, (int)(Color.red(pixelsCurrent[x][y]) * betaR + alphaR), (int)(Color.green(pixelsCurrent[x][y]) * betaG + alphaG), (int)(Color.blue(pixelsCurrent[x][y]) * betaB + alphaB));
 
+
     }
 
 
@@ -1267,24 +1321,24 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
             {
-                min = 255*3;
-                indx = x;
-                indy = y;
-                for(int i = x - 1;i < x + 2;i++)
-                    for(int j = y - 1;j < y + 2;j++)
-                    {
-                        if(i != -1 && i != imageWidth && j != -1 && j != imageHeight)
-                        {
-                            sum = Color.red(pixelsOld[i][j]) + Color.green(pixelsOld[i][j]) + Color.blue(pixelsOld[i][j]);
-                            if(sum < min)
-                            {
-                                min = sum;
-                                indx = i;
-                                indy = j;
+                if (!applyTask.isCancelled()) {
+                    min = 255 * 3;
+                    indx = x;
+                    indy = y;
+                    for (int i = x - 1; i < x + 2; i++)
+                        for (int j = y - 1; j < y + 2; j++) {
+                            if (i != -1 && i != imageWidth && j != -1 && j != imageHeight) {
+                                sum = Color.red(pixelsOld[i][j]) + Color.green(pixelsOld[i][j]) + Color.blue(pixelsOld[i][j]);
+                                if (sum < min) {
+                                    min = sum;
+                                    indx = i;
+                                    indy = j;
+                                }
                             }
                         }
-                    }
-                toPixelRGB(x,y,Color.red(pixelsOld[indx][indy]),Color.green(pixelsOld[indx][indy]),Color.blue(pixelsOld[indx][indy]));
+                    toPixelRGB(x, y, Color.red(pixelsOld[indx][indy]), Color.green(pixelsOld[indx][indy]), Color.blue(pixelsOld[indx][indy]));
+                }
+                else return;
             }
     }
 
@@ -1297,24 +1351,24 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
             {
-                max = 0;
-                indx = x;
-                indy = y;
-                for(int i = x - 1;i < x + 2;i++)
-                    for(int j = y - 1;j < y + 2;j++)
-                    {
-                        if(i != -1 && i != imageWidth && j != -1 && j != imageHeight)
-                        {
-                            sum = Color.red(pixelsOld[i][j]) + Color.green(pixelsOld[i][j]) + Color.blue(pixelsOld[i][j]);
-                            if(sum > max)
-                            {
-                                max = sum;
-                                indx = i;
-                                indy = j;
+                if (!applyTask.isCancelled()) {
+                    max = 0;
+                    indx = x;
+                    indy = y;
+                    for (int i = x - 1; i < x + 2; i++)
+                        for (int j = y - 1; j < y + 2; j++) {
+                            if (i != -1 && i != imageWidth && j != -1 && j != imageHeight) {
+                                sum = Color.red(pixelsOld[i][j]) + Color.green(pixelsOld[i][j]) + Color.blue(pixelsOld[i][j]);
+                                if (sum > max) {
+                                    max = sum;
+                                    indx = i;
+                                    indy = j;
+                                }
                             }
                         }
-                    }
-                toPixelRGB(x,y,Color.red(pixelsOld[indx][indy]),Color.green(pixelsOld[indx][indy]),Color.blue(pixelsOld[indx][indy]));
+                    toPixelRGB(x, y, Color.red(pixelsOld[indx][indy]), Color.green(pixelsOld[indx][indy]), Color.blue(pixelsOld[indx][indy]));
+                }
+                else return;
             }
     }
 
@@ -1335,30 +1389,32 @@ public class Main extends Activity {
         for(int x = 2;x < imageWidth - 2;x++)
             for(int y = 2;y < imageHeight - 2;y++)
             {
-                sum_r = 0;
-                sum_g = 0;
-                sum_b = 0;
-                for(int i = x - 2;i < x + 3;i++)
-                    for(int j = y - 2;j < y + 3;j++)
-                    {
-                        sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                        sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                        sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
-                    }
+                if (!applyTask.isCancelled()) {
+                    sum_r = 0;
+                    sum_g = 0;
+                    sum_b = 0;
+                    for (int i = x - 2; i < x + 3; i++)
+                        for (int j = y - 2; j < y + 3; j++) {
+                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                        }
 
-                convR = (int)(sum_r/(float)paramMatrixNorme);
-                convR = max_2(convR, 0);
-                convR = min_2(convR, 255);
+                    convR = (int) (sum_r / (float) paramMatrixNorme);
+                    convR = max_2(convR, 0);
+                    convR = min_2(convR, 255);
 
-                convG = (int)(sum_g/(float)paramMatrixNorme);
-                convG = max_2(convG, 0);
-                convG = min_2(convG, 255);
+                    convG = (int) (sum_g / (float) paramMatrixNorme);
+                    convG = max_2(convG, 0);
+                    convG = min_2(convG, 255);
 
-                convB = (int)(sum_b/(float)paramMatrixNorme);
-                convB = max_2(convB, 0);
-                convB = min_2(convB, 255);
+                    convB = (int) (sum_b / (float) paramMatrixNorme);
+                    convB = max_2(convB, 0);
+                    convB = min_2(convB, 255);
 
-                toPixelRGB(x,y,convR,convG,convB);
+                    toPixelRGB(x, y, convR, convG, convB);
+                }
+                else return;
             }
     }
 
@@ -1386,19 +1442,21 @@ public class Main extends Activity {
         for(int x = 2;x < imageWidth - 2;x++)
             for(int y = 2;y < imageHeight - 2;y++)
             {
-                sum_r = 0;
-                sum_g = 0;
-                sum_b = 0;
+                if (!applyTask.isCancelled()) {
+                    sum_r = 0;
+                    sum_g = 0;
+                    sum_b = 0;
 
-                for(int i = x - 2;i < x + 3;i++)
-                    for(int j = y - 2;j < y + 3;j++)
-                    {
-                        sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                        sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                        sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
-                    }
+                    for (int i = x - 2; i < x + 3; i++)
+                        for (int j = y - 2; j < y + 3; j++) {
+                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                        }
 
-                toPixelRGB(x,y,sum_r/paramMatrixNorme,sum_g/paramMatrixNorme,sum_b/paramMatrixNorme);
+                    toPixelRGB(x, y, sum_r / paramMatrixNorme, sum_g / paramMatrixNorme, sum_b / paramMatrixNorme);
+                }
+                else return;
             }
     }
 
@@ -1419,25 +1477,27 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
             {
-                toPixelCopy(x,y,pixelsOld[x][y]);
+                toPixelCopy(x, y, pixelsOld[x][y]);
             }
 
         for(int x = 2;x < imageWidth - 2;x++)
             for(int y = 2;y < imageHeight - 2;y++)
             {
-                sum_r = 0;
-                sum_g = 0;
-                sum_b = 0;
+                if (!applyTask.isCancelled()) {
+                    sum_r = 0;
+                    sum_g = 0;
+                    sum_b = 0;
 
-                for(int i = x - 2;i < x + 3;i++)
-                    for(int j = y - 2;j < y + 3;j++)
-                    {
-                        sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                        sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                        sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
-                    }
+                    for (int i = x - 2; i < x + 3; i++)
+                        for (int j = y - 2; j < y + 3; j++) {
+                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                        }
 
-                toPixelRGB(x,y,sum_r/paramMatrixNorme,sum_g/paramMatrixNorme,sum_b/paramMatrixNorme);
+                    toPixelRGB(x, y, sum_r / paramMatrixNorme, sum_g / paramMatrixNorme, sum_b / paramMatrixNorme);
+                }
+                else return;
             }
     }
 
@@ -1469,24 +1529,29 @@ public class Main extends Activity {
         for(int x = 2;x < imageWidth - 2;x++)
             for(int y = 2;y < imageHeight - 2;y++)
             {
-                sum_r = 0;
-                sum_g = 0;
-                sum_b = 0;
-                for(int i = x - 2;i < x + 3;i++)
-                    for(int j = y - 2;j < y + 3;j++)
-                    {
-                        sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                        sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                        sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
-                    }
-                toPixelRGB(x,y,sum_r/paramMatrixNorme,sum_g/paramMatrixNorme,sum_b/paramMatrixNorme);
+                if (!applyTask.isCancelled()) {
+                    sum_r = 0;
+                    sum_g = 0;
+                    sum_b = 0;
+                    for (int i = x - 2; i < x + 3; i++)
+                        for (int j = y - 2; j < y + 3; j++) {
+                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
+                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
+                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                        }
+                    toPixelRGB(x, y, sum_r / paramMatrixNorme, sum_g / paramMatrixNorme, sum_b / paramMatrixNorme);
+                }
+                else return;
             }
 
         for(int x = 1;x < imageWidth - 1;x++)
             for(int y = 1;y < imageHeight - 1;y++) {
-                for (int k = 0; k < 3; k++)
-                    grad_temp[x][y][k] = kirsch(x, y, k);
-                progressUpdate();
+                if (!applyTask.isCancelled()) {
+                    for (int k = 0; k < 3; k++)
+                        grad_temp[x][y][k] = kirsch(x, y, k);
+                    progressUpdate();
+                }
+                else return;
             }
 
         for(int x = 1;x < imageWidth - 1;x++)
@@ -1547,8 +1612,11 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
             {
-                val = (int)((float)Color.red(pixelsOld[x][y]) * 0.2989 + (float)Color.green(pixelsOld[x][y]) * 0.587 + (float)Color.blue(pixelsOld[x][y]) * 0.114);
-                toPixelRGB(x,y,val,val,val);
+                if (!applyTask.isCancelled()) {
+                    val = (int) ((float) Color.red(pixelsOld[x][y]) * 0.2989 + (float) Color.green(pixelsOld[x][y]) * 0.587 + (float) Color.blue(pixelsOld[x][y]) * 0.114);
+                    toPixelRGB(x, y, val, val, val);
+                }
+                else return;
             }
     }
 
@@ -1562,11 +1630,14 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
             {
-                red = (int)((float)Color.red(pixelsOld[x][y]) * 0.393 + (float)Color.green(pixelsOld[x][y]) * 0.769 + (float)Color.blue(pixelsOld[x][y]) * 0.189);
-                green = (int)((float)Color.red(pixelsOld[x][y]) * 0.349 + (float)Color.green(pixelsOld[x][y]) * 0.686 + (float)Color.blue(pixelsOld[x][y]) * 0.168);
-                blue = (int)((float)Color.red(pixelsOld[x][y]) * 0.272 + (float)Color.green(pixelsOld[x][y]) * 0.534 + (float)Color.blue(pixelsOld[x][y]) * 0.131);
+                if (!applyTask.isCancelled()) {
+                    red = (int) ((float) Color.red(pixelsOld[x][y]) * 0.393 + (float) Color.green(pixelsOld[x][y]) * 0.769 + (float) Color.blue(pixelsOld[x][y]) * 0.189);
+                    green = (int) ((float) Color.red(pixelsOld[x][y]) * 0.349 + (float) Color.green(pixelsOld[x][y]) * 0.686 + (float) Color.blue(pixelsOld[x][y]) * 0.168);
+                    blue = (int) ((float) Color.red(pixelsOld[x][y]) * 0.272 + (float) Color.green(pixelsOld[x][y]) * 0.534 + (float) Color.blue(pixelsOld[x][y]) * 0.131);
 
-                toPixelRGB(x,y,(red > 255 ? 255:red),(green > 255 ? 255:green),(blue > 255 ? 255:blue));
+                    toPixelRGB(x, y, (red > 255 ? 255 : red), (green > 255 ? 255 : green), (blue > 255 ? 255 : blue));
+                }
+                else return;
             }
     }
 
@@ -1577,7 +1648,10 @@ public class Main extends Activity {
     public void applyNegative() {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
-                toPixelRGB(x,y,255 - Color.red(pixelsOld[x][y]),255 - Color.green(pixelsOld[x][y]),255 - Color.blue(pixelsOld[x][y]));
+                if (!applyTask.isCancelled()) {
+                    toPixelRGB(x, y, 255 - Color.red(pixelsOld[x][y]), 255 - Color.green(pixelsOld[x][y]), 255 - Color.blue(pixelsOld[x][y]));
+                }
+                else return;
     }
 
 
@@ -1587,7 +1661,10 @@ public class Main extends Activity {
     public void applyMirror() {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
-                toPixelRGB(x,y,Color.red(pixelsOld[imageWidth - 1 - x][y]),Color.green(pixelsOld[imageWidth - 1 - x][y]),Color.blue(pixelsOld[imageWidth - 1 - x][y]));
+                if (!applyTask.isCancelled()) {
+                    toPixelRGB(x, y, Color.red(pixelsOld[imageWidth - 1 - x][y]), Color.green(pixelsOld[imageWidth - 1 - x][y]), Color.blue(pixelsOld[imageWidth - 1 - x][y]));
+                }
+                else return;
     }
 
     /**************************************************************
@@ -1625,7 +1702,7 @@ public class Main extends Activity {
 
     public void progressUpdate(){
         progressCount += 1;
-        if ((progressCount%1000 == 0) | (progressCount == progressBarControl.getMax())) {
+        if ((progressCount%10000 == 0) | (progressCount == progressBarControl.getMax())) {
             progressBarControl.setProgress(progressCount);
         }
     }
@@ -1949,83 +2026,35 @@ public class Main extends Activity {
         ImageView mImageView = (ImageView) findViewById(R.id.imageDisplay);
 
         if (resultCode == RESULT_OK) {
+            messageBox.setText(R.string.loading);
+            displayBox.setVisibility(View.GONE);
+            (findViewById(R.id.imageLoading)).setVisibility(View.VISIBLE);
             switch (requestCode) {
                 case SELECT_PICTURE:
-                    String path = getRealPathFromURI(data.getData());
-                    Log.d("Choose Picture", path);
-                    //Transformer la photo en Bitmap
-                    Bitmap bitmap = BitmapFactory.decodeFile(path);
-                    //Afficher le Bitmap
-                    mImageView.setImageBitmap(bitmap);
-                    imageWidth = bitmap.getWidth();
-                    imageHeight = bitmap.getHeight();
-
-                    pixelsCurrent = new int[imageWidth][imageHeight];
-                    pixelsOld = new int[imageWidth][imageHeight];
-                    pixelsTemp = new int[imageWidth * imageHeight];
-
-                    for (int x = 0; x < imageWidth; x++) {
-                        for (int y = 0; y < imageHeight; y++) {
-                            pixelsCurrent[x][y] = bitmap.getPixel(x, y);
-                        }
-                    }
-
-                    findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
-                    findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+                    new AsyncImageLoadTask().execute(new loadParams(this, data));
                     break;
                 case SELECT_REFERENCE_PICTURE:
-                    path = getRealPathFromURI(data.getData());
-                    Log.d("Choose Ref Picture", path);
-                    //Transformer la photo en Bitmap
-                    bitmap = BitmapFactory.decodeFile(path);
-                    referenceWidth = bitmap.getWidth();
-                    referenceHeight = bitmap.getHeight();
-
-                    pixelsReference = new int[referenceWidth][referenceHeight];
-
-                    //TODO : Histogram here ?
-
-                    for (int x = 0; x < referenceWidth; x++) {
-                        for (int y = 0; y < referenceHeight; y++) {
-                            pixelsReference[x][y] = bitmap.getPixel(x, y);
-                        }
-                    }
-
-                    String[] pathSplit = path.split("/");
-
-                    paramImgControlText.setText(pathSplit[pathSplit.length-1]);
-                    findViewById(R.id.btApply).setVisibility(View.VISIBLE);
-
+                    new AsyncReferenceLoadTask().execute(new loadParams(this, data));
                     break;
                 case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
-                    path = getRealPathFromURI(data.getData());
-                    Log.d("Choose Picture", path);
-                    //Transformer la photo en Bitmap
-                    bitmap = BitmapFactory.decodeFile(path);
-                    //Afficher le Bitmap
-                    mImageView.setImageBitmap(bitmap);
-                    imageWidth = bitmap.getWidth();
-                    imageHeight = bitmap.getHeight();
-
-                    pixelsCurrent = new int[imageWidth][imageHeight];
-                    pixelsOld = new int[imageWidth][imageHeight];
-                    pixelsTemp = new int[imageWidth * imageHeight];
-
-                    for (int x = 0; x < imageWidth; x++) {
-                        for (int y = 0; y < imageHeight; y++) {
-                            pixelsCurrent[x][y] = bitmap.getPixel(x, y);
-                        }
-                    }
-
-                    findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
-                    findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+                    new AsyncCamLoadTask().execute(new loadParams(this, data));
                     break;
             }
         }
         else if (resultCode == RESULT_CANCELED) {
-            messageBox.setText(R.string.camCancelled);
+            switch (requestCode) {
+                case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
+                    messageBox.setText(R.string.camCancelled);
+                default:
+                    messageBox.setText(R.string.loadCancelled);
+            }
         } else {
-            messageBox.setText(R.string.camError);
+                switch (requestCode) {
+                    case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
+                        messageBox.setText(R.string.camError);
+                    default:
+                        messageBox.setText(R.string.loadError);
+                }
         }
 
     }
@@ -2044,6 +2073,166 @@ public class Main extends Activity {
         return result;
     }
 
+    public class loadParams {
+        Context context;
+        Intent data;
+
+        loadParams(Context context, Intent data) {
+            this.context = context;
+            this.data = data;
+        }
+    }
+
+    private class AsyncImageLoadTask extends AsyncTask<loadParams, Void, Void>
+    {
+        Bitmap bitmap;
+
+        @Override
+        protected Void doInBackground(loadParams... params) {
+            try {
+                bitmap = Picasso.with(params[0].context).load(params[0].data.getData()).get();
+            } catch (IOException e) {
+                return null;
+            }
+
+            imageWidth = bitmap.getWidth();
+            imageHeight = bitmap.getHeight();
+
+            setProgressLoadMax(imageHeight * imageWidth);
+            progressCount = 0;
+
+            pixelsCurrent = new int[imageWidth][imageHeight];
+            pixelsOld = new int[imageWidth][imageHeight];
+            pixelsTemp = new int[imageWidth * imageHeight];
+
+            for (int x = 0; x < imageWidth; x++) {
+                for (int y = 0; y < imageHeight; y++) {
+                    pixelsCurrent[x][y] = bitmap.getPixel(x, y);
+                    progressLoadUpdate();
+                }
+            }
+
+
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            if (bitmap != null) {
+                displayBox.setImageBitmap(bitmap);
+                messageBox.setText(R.string.loadSuccess);
+                findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
+                findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+            }
+            else
+                messageBox.setText(R.string.loadError);
+            displayBox.setVisibility(View.VISIBLE);
+            (findViewById(R.id.imageLoading)).setVisibility(View.GONE);
+        }
+    }
+
+    private class AsyncReferenceLoadTask extends AsyncTask<loadParams, Void, Void>
+    {
+        Bitmap bitmap;
+        String[] pathSplit;
+
+        @Override
+        protected Void doInBackground(loadParams... params) {
+            try {
+                bitmap = Picasso.with(params[0].context).load(params[0].data.getData()).get();
+            } catch (IOException e) {
+                return null;
+            }
+
+            referenceWidth = bitmap.getWidth();
+            referenceHeight = bitmap.getHeight();
+
+            setProgressLoadMax(referenceHeight * referenceWidth);
+            progressCount = 0;
+
+            pixelsReference = new int[referenceWidth][referenceHeight];
+
+            for (int x = 0; x < referenceWidth; x++) {
+                for (int y = 0; y < referenceHeight; y++) {
+                    pixelsReference[x][y] = bitmap.getPixel(x, y);
+                    progressLoadUpdate();
+                }
+            }
+
+            pathSplit = params[0].data.getData().getPath().split("/");
+
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            if (bitmap != null) {
+                messageBox.setText(R.string.loadSuccess);
+                paramImgControlText.setText(pathSplit[pathSplit.length - 1]);
+                findViewById(R.id.btApply).setVisibility(View.VISIBLE);
+            }
+            else
+                messageBox.setText(R.string.loadError);
+            displayBox.setVisibility(View.VISIBLE);
+            (findViewById(R.id.imageLoading)).setVisibility(View.GONE);
+        }
+    }
+
+    private class AsyncCamLoadTask extends AsyncTask<loadParams, Void, Void>
+    {
+        Bitmap bitmap;
+
+        @Override
+        protected Void doInBackground(loadParams... params) {
+            try {
+                bitmap = Picasso.with(params[0].context).load(params[0].data.getData()).get();
+            } catch (IOException e) {
+                return null;
+            }
+
+            imageWidth = bitmap.getWidth();
+            imageHeight = bitmap.getHeight();
+
+            setProgressLoadMax(imageHeight * imageWidth);
+            progressCount = 0;
+
+            pixelsCurrent = new int[imageWidth][imageHeight];
+            pixelsOld = new int[imageWidth][imageHeight];
+            pixelsTemp = new int[imageWidth * imageHeight];
+
+            for (int x = 0; x < imageWidth; x++) {
+                for (int y = 0; y < imageHeight; y++) {
+                    pixelsCurrent[x][y] = bitmap.getPixel(x, y);
+                    progressLoadUpdate();
+                }
+            }
+
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            if (bitmap != null) {
+                displayBox.setImageBitmap(bitmap);
+                messageBox.setText(R.string.loadSuccess);
+                findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
+                findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+            }
+            else
+                messageBox.setText(R.string.loadError);
+            displayBox.setVisibility(View.VISIBLE);
+            (findViewById(R.id.imageLoading)).setVisibility(View.GONE);
+        }
+    }
+
+    public void setProgressLoadMax(int max){
+        progressLoadBarControl.setMax(max);
+    }
+
+    public void progressLoadUpdate() {
+        progressCount += 1;
+        if ((progressCount % 25000 == 0) | (progressCount == progressLoadBarControl.getMax())) {
+            progressLoadBarControl.setProgress(progressCount);
+        }
+    }
+
     @Override
     public void onBackPressed(){
         new AlertDialog.Builder(this)
@@ -2053,6 +2242,8 @@ public class Main extends Activity {
                 .setPositiveButton(R.string.exitYes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        if (applyTask != null && applyTask.running)
+                            applyTask.cancel(true);
                         finish();
                     }
                 })
