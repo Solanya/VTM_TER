@@ -17,6 +17,7 @@
     <string name="camSuccess">Prise de photo effectuée.</string>
     <string name="camCancelled">Prise de photo annulée.</string>
     <string name="camError">Erreur durant la prise de photo.</string>
+
     <string name="saveIntDirError">Erreur durant la création du dossier.</string>
     <string name="saveIntFileError">Erreur durant la création du fichier.</string>
     <string name="saveExtDirError">Erreur durant la création du dossier.</string>
@@ -24,6 +25,7 @@
     <string name="saveStoError">Erreur de stockage.</string>
     <string name="saveImgError">Erreur durant la sauvegarde de l\'image.</string>
     <string name="saveSuccess">Sauvegarde effectuée.</string>
+    <string name="saveDesc">Sauvegardé avec otTER.</string>
 
     <string name="valueChangeTitle">Changer la valeur du paramètre</string>
 
@@ -73,9 +75,6 @@
     <string name="processCosmeticSepia">Sépia</string>
     <string name="processCosmeticNegative">Négatif</string>
     <string name="processCosmeticMirror">Miroir</string>
-
-    <string name="processFlou">Flou</string>
-    <string name="processTest">Test</string>
 
     <string name="settings">Paramètres</string>
 </resources>

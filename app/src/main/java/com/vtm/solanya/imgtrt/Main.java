@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,11 +32,11 @@ import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Calendar;
 
 public class Main extends Activity {
@@ -94,6 +93,8 @@ public class Main extends Activity {
     public int[][] pixelsOld;
     public int[] pixelsTemp;
     public Bitmap.Config bitmapConfig;
+
+    public Target target;
 
     public int xDelta;
 
@@ -777,88 +778,32 @@ public class Main extends Activity {
         startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE);
     }
 
-    public boolean btSaveClick() {
-        String fullPath;
-        OutputStream fOut;
-        File file;
+    public void btSaveClick() {
 
+        Calendar c = Calendar.getInstance();
+        String fileDir = "/otTER";
+        String fileName = "otTER_"+c.get(Calendar.YEAR)+"-"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)+".png";
+
+        String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + fileDir;
         try {
-            fullPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "Saved Images";
+            File dir = new File(filePath);
+            if (!dir.exists())
+                dir.mkdirs();
+            File file = new File(dir, fileName);
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
 
-            File dir = new File(fullPath);
-            if (!dir.exists()) {
-                boolean checkDirCreation = dir.mkdirs();
-                if (!checkDirCreation){
-                    messageBox.setText(R.string.saveExtDirError);
-                    //return false;
-                }
-            }
-
-            Calendar c = Calendar.getInstance();
-            String fileName = "otTER-"+c.get(Calendar.YEAR)+"-"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)+".png";
-
-            file = new File(fullPath+fileName);
-            boolean checkFileCreation = file.createNewFile();
-            if (!checkFileCreation){
-                messageBox.setText(R.string.saveExtFileError);
-                //return false;
-            }
-            fOut = new FileOutputStream(file);
-        } catch (Exception e) {
-            fullPath = getFilesDir().getAbsolutePath();
-
-            File dir = new File(fullPath);
-            if (!dir.exists()) {
-                boolean checkDirCreation = dir.mkdirs();
-                if (!checkDirCreation){
-                    messageBox.setText(R.string.saveIntDirError);
-                    //return false;
-                }
-            }
-
-            Calendar c = Calendar.getInstance();
-            String fileName = "otTER-"+c.get(Calendar.YEAR)+"-"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)+".png";
-            file = new File(fullPath+fileName);
-
-            try {
-                boolean checkFileCreation = file.createNewFile();
-                if (!checkFileCreation){
-                    messageBox.setText(R.string.saveIntFileError);
-                    //return false;
-                }
-                fOut = new FileOutputStream(file);
-            } catch (Exception e2) {
-                Log.e("Save Image", e2.getMessage());
-                messageBox.setText(R.string.saveStoError);
-                return false;
-            }
-        }
-
-        try {
-            if (displayBox.getDrawable() == null) {
-                messageBox.setText(R.string.imageEmpty);
-                return false;
-            }
-
-            BitmapDrawable bitmapDrawable = ((BitmapDrawable) displayBox.getDrawable());
-            Bitmap bitmap = bitmapDrawable.getBitmap();
-
-            // 100 means no compression, the lower you go, the stronger the compression
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+            Bitmap bitmap = ((BitmapDrawable) displayBox.getDrawable()).getBitmap();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, fOut);
             fOut.flush();
             fOut.close();
 
-            MediaStore.Images.Media.insertImage(this.getContentResolver(), file.getAbsolutePath(), file.getName(), file.getName());
+            MediaStore.Images.Media.insertImage(this.getContentResolver(), bitmap, fileName, getString(R.string.saveDesc));
 
             messageBox.setText(R.string.saveSuccess);
-
-            return true;
-
-
-        } catch (Exception e) {
-            Log.e("Save Image", e.getMessage());
-            messageBox.setText(R.string.saveImgError);
-            return false;
+        }
+        catch (IOException e) {
+            messageBox.setText(R.string.saveStoError);
         }
     }
 
@@ -1850,7 +1795,7 @@ public class Main extends Activity {
                     paramMatrixNorme = 0;
                     for (int i = 0; i<5; i++)
                         for (int j=0; j<5; j++)
-                            paramMatrixNorme += paramMatrixValue[i][j];
+                            paramMatrixNorme += paramMatrixTemp[i][j];
 
                     if (paramMatrixNorme != 0) {
                         for (int i = 0; i < 5; i++) {
