@@ -13,7 +13,8 @@
     <string name="loading">Chargement en cours…</string>
     <string name="loadSuccess">Chargement de l\'image effectué.</string>
     <string name="loadCancelled">Chargement de l\'image annulé.</string>
-    <string name="loadError">Erreur durant le chargement de l\'image.</string>
+    <string name="loadSizeError">Erreur : l\'image dépasse 4096x4096.</string>
+    <string name="loadImgError">Erreur durant le chargement de l\'image.</string>
     <string name="camSuccess">Prise de photo effectuée.</string>
     <string name="camCancelled">Prise de photo annulée.</string>
     <string name="camError">Erreur durant la prise de photo.</string>

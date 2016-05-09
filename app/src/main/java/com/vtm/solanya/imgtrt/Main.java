@@ -3,6 +3,7 @@ package com.vtm.solanya.imgtrt;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,6 +35,7 @@ import android.widget.ViewFlipper;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -781,24 +783,32 @@ public class Main extends Activity {
     public void btSaveClick() {
 
         Calendar c = Calendar.getInstance();
-        String fileDir = "/otTER";
-        String fileName = "otTER_"+c.get(Calendar.YEAR)+"-"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)+".png";
+        String fileName = "otTER_"+c.get(Calendar.YEAR)+"-"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)
+                          +"-"+c.get(Calendar.HOUR_OF_DAY)+"-"+c.get(Calendar.MINUTE)+"-"+c.get(Calendar.SECOND)+".png";
 
-        String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + fileDir;
+        String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + fileName;
+        Bitmap bitmap = ((BitmapDrawable) displayBox.getDrawable()).getBitmap();
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 90, bytes);
+
+        File file = new File(filePath);
+
+        FileOutputStream fOut;
+
         try {
-            File dir = new File(filePath);
-            if (!dir.exists())
-                dir.mkdirs();
-            File file = new File(dir, fileName);
             file.createNewFile();
-            FileOutputStream fOut = new FileOutputStream(file);
+            fOut = new FileOutputStream(file);
+            fOut.write(bytes.toByteArray());
 
-            Bitmap bitmap = ((BitmapDrawable) displayBox.getDrawable()).getBitmap();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 90, fOut);
+            ContentResolver cr = getContentResolver();
+            String imagePath = file.getAbsolutePath();
+            String name = file.getName();
+            String desc = getString(R.string.saveDesc);
+            String savedURL = MediaStore.Images.Media.insertImage(cr, imagePath, name, desc);
+
             fOut.flush();
             fOut.close();
-
-            MediaStore.Images.Media.insertImage(this.getContentResolver(), bitmap, fileName, getString(R.string.saveDesc));
 
             messageBox.setText(R.string.saveSuccess);
         }
@@ -1998,7 +2008,7 @@ public class Main extends Activity {
                     case CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE:
                         messageBox.setText(R.string.camError);
                     default:
-                        messageBox.setText(R.string.loadError);
+                        messageBox.setText(R.string.loadImgError);
                 }
         }
 
@@ -2031,6 +2041,8 @@ public class Main extends Activity {
     private class AsyncImageLoadTask extends AsyncTask<loadParams, Void, Void>
     {
         Bitmap bitmap;
+        int tempWidth;
+        int tempHeight;
 
         @Override
         protected Void doInBackground(loadParams... params) {
@@ -2040,36 +2052,48 @@ public class Main extends Activity {
                 return null;
             }
 
+            tempWidth = imageWidth;
+            tempHeight = imageHeight;
+
             imageWidth = bitmap.getWidth();
             imageHeight = bitmap.getHeight();
 
-            setProgressLoadMax(imageHeight * imageWidth);
-            progressCount = 0;
+            if (imageWidth <= 4096 && imageHeight <= 4096) {
 
-            pixelsCurrent = new int[imageWidth][imageHeight];
-            pixelsOld = new int[imageWidth][imageHeight];
-            pixelsTemp = new int[imageWidth * imageHeight];
+                setProgressLoadMax(imageHeight * imageWidth);
+                progressCount = 0;
 
-            for (int x = 0; x < imageWidth; x++) {
-                for (int y = 0; y < imageHeight; y++) {
-                    pixelsCurrent[x][y] = bitmap.getPixel(x, y);
-                    progressLoadUpdate();
+                pixelsCurrent = new int[imageWidth][imageHeight];
+                pixelsOld = new int[imageWidth][imageHeight];
+                pixelsTemp = new int[imageWidth * imageHeight];
+
+                for (int x = 0; x < imageWidth; x++) {
+                    for (int y = 0; y < imageHeight; y++) {
+                        pixelsCurrent[x][y] = bitmap.getPixel(x, y);
+                        progressLoadUpdate();
+                    }
                 }
             }
-
 
             return null;
         }
         @Override
         protected void onPostExecute(Void result) {
             if (bitmap != null) {
-                displayBox.setImageBitmap(bitmap);
-                messageBox.setText(R.string.loadSuccess);
-                findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
-                findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+                if (imageWidth <= 4096 && imageHeight <= 4096) {
+                    displayBox.setImageBitmap(bitmap);
+                    messageBox.setText(R.string.loadSuccess);
+                    findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
+                    findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+                }
+                else {
+                    imageWidth = tempWidth;
+                    imageHeight = tempHeight;
+                    messageBox.setText(R.string.loadSizeError);
+                }
             }
             else
-                messageBox.setText(R.string.loadError);
+                messageBox.setText(R.string.loadImgError);
             displayBox.setVisibility(View.VISIBLE);
             (findViewById(R.id.imageLoading)).setVisibility(View.GONE);
         }
@@ -2114,8 +2138,9 @@ public class Main extends Activity {
                 paramImgControlText.setText(pathSplit[pathSplit.length - 1]);
                 findViewById(R.id.btApply).setVisibility(View.VISIBLE);
             }
-            else
-                messageBox.setText(R.string.loadError);
+            else {
+                messageBox.setText(R.string.loadImgError);
+            }
             displayBox.setVisibility(View.VISIBLE);
             (findViewById(R.id.imageLoading)).setVisibility(View.GONE);
         }
@@ -2124,6 +2149,8 @@ public class Main extends Activity {
     private class AsyncCamLoadTask extends AsyncTask<loadParams, Void, Void>
     {
         Bitmap bitmap;
+        int tempWidth;
+        int tempHeight;
 
         @Override
         protected Void doInBackground(loadParams... params) {
@@ -2133,20 +2160,26 @@ public class Main extends Activity {
                 return null;
             }
 
+            tempWidth = imageWidth;
+            tempHeight = imageHeight;
+
             imageWidth = bitmap.getWidth();
             imageHeight = bitmap.getHeight();
 
-            setProgressLoadMax(imageHeight * imageWidth);
-            progressCount = 0;
+            if (imageWidth <= 4096 && imageHeight <= 4096) {
 
-            pixelsCurrent = new int[imageWidth][imageHeight];
-            pixelsOld = new int[imageWidth][imageHeight];
-            pixelsTemp = new int[imageWidth * imageHeight];
+                setProgressLoadMax(imageHeight * imageWidth);
+                progressCount = 0;
 
-            for (int x = 0; x < imageWidth; x++) {
-                for (int y = 0; y < imageHeight; y++) {
-                    pixelsCurrent[x][y] = bitmap.getPixel(x, y);
-                    progressLoadUpdate();
+                pixelsCurrent = new int[imageWidth][imageHeight];
+                pixelsOld = new int[imageWidth][imageHeight];
+                pixelsTemp = new int[imageWidth * imageHeight];
+
+                for (int x = 0; x < imageWidth; x++) {
+                    for (int y = 0; y < imageHeight; y++) {
+                        pixelsCurrent[x][y] = bitmap.getPixel(x, y);
+                        progressLoadUpdate();
+                    }
                 }
             }
 
@@ -2155,13 +2188,20 @@ public class Main extends Activity {
         @Override
         protected void onPostExecute(Void result) {
             if (bitmap != null) {
-                displayBox.setImageBitmap(bitmap);
-                messageBox.setText(R.string.loadSuccess);
-                findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
-                findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+                if (imageWidth <= 4096 && imageHeight <= 4096) {
+                    displayBox.setImageBitmap(bitmap);
+                    messageBox.setText(R.string.loadSuccess);
+                    findViewById(R.id.btUndo).setBackgroundResource(R.mipmap.ic_undo);
+                    findViewById(R.id.btUndo).setVisibility(View.INVISIBLE);
+                }
+                else {
+                    imageWidth = tempWidth;
+                    imageHeight = tempHeight;
+                    messageBox.setText(R.string.loadSizeError);
+                }
             }
             else
-                messageBox.setText(R.string.loadError);
+                messageBox.setText(R.string.loadImgError);
             displayBox.setVisibility(View.VISIBLE);
             (findViewById(R.id.imageLoading)).setVisibility(View.GONE);
         }
