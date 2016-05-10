@@ -1022,6 +1022,9 @@ public class Main extends Activity {
         int nbPixelRef = referenceWidth * referenceHeight;
         int specR,specG,specB;
 
+        boolean NotFoundR, NotFoundG, NotFoundB;
+        int IndiceMinR, IndiceMaxR, IndiceR, IndiceMinG, IndiceMaxG, IndiceG, IndiceMinB, IndiceMaxB, IndiceB;
+
         for(int x = 0 ; x < imageWidth ; x++)
             for(int y = 0 ; y < imageHeight ; y++)
             {
@@ -1061,31 +1064,59 @@ public class Main extends Activity {
             }
         }
 
-        specR = 0;
-        specG = 0;
-        specB = 0;
-
         for (int x = 0; x < imageWidth; x++) {
             for (int y = 0; y < imageHeight; y++) {
-                if (!applyTask.isCancelled()) {
-                    for (int i = 0; i < 256; i++)
-                        if ((255 * ddpRef[i][0]) > Color.red(pixelsCurrent[x][y])) {
-                            specR = i;
+
+                IndiceMinR = 0;
+                IndiceMaxR = 255;
+
+                while (true) {
+                    if (!applyTask.isCancelled()) {
+                        IndiceR = IndiceMinR + (IndiceMaxR - IndiceMinR + 1) / 2;
+                        if ((((255 * ddpRef[IndiceR][0]) > Color.red(pixelsCurrent[x][y])) && ((255 * ddpRef[IndiceR - 1][0]) <= Color.red(pixelsCurrent[x][y]))) || (IndiceR == 255 || IndiceR == 1)) {
+                            specR = IndiceR;
                             break;
-                        }
-                    for (int i = 0; i < 256; i++)
-                        if ((255 * ddpRef[i][1]) > Color.green(pixelsCurrent[x][y])) {
-                            specG = i;
+                        } else if ((255 * ddpRef[IndiceR][0]) <= Color.red(pixelsCurrent[x][y]))
+                            IndiceMinR = IndiceR;
+                        else IndiceMaxR = IndiceR;
+                    }
+                    else return;
+                 }
+
+                IndiceMinG = 0;
+                IndiceMaxG = 255;
+
+                while (true) {
+                    if (!applyTask.isCancelled()) {
+                        IndiceG = IndiceMinG + (IndiceMaxG - IndiceMinG + 1) / 2;
+                        if ((((255 * ddpRef[IndiceG][1]) > Color.green(pixelsCurrent[x][y])) && ((255 * ddpRef[IndiceG - 1][1]) <= Color.green(pixelsCurrent[x][y]))) || (IndiceG == 255 || IndiceG == 1)) {
+                            specG = IndiceG;
                             break;
-                        }
-                    for (int i = 0; i < 256; i++)
-                        if ((255 * ddpRef[i][2]) > Color.blue(pixelsCurrent[x][y])) {
-                            specB = i;
-                            break;
-                        }
-                    toPixelRGB(x, y, specR, specG, specB);
+                        } else if ((255 * ddpRef[IndiceG][1]) <= Color.green(pixelsCurrent[x][y]))
+                            IndiceMinG = IndiceG;
+                        else IndiceMaxG = IndiceG;
+                    }
+                    else return;
                 }
-                else return;
+
+                IndiceMinB = 0;
+                IndiceMaxB = 255;
+
+                while (true){
+                    if (!applyTask.isCancelled()) {
+                        IndiceB = IndiceMinB + (IndiceMaxB - IndiceMinB + 1) / 2;
+                        if ((((255 * ddpRef[IndiceB][2]) > Color.blue(pixelsCurrent[x][y])) && ((255 * ddpRef[IndiceB -1 ][2]) <= Color.blue(pixelsCurrent[x][y]))) || (IndiceB == 255 || IndiceB == 1)) {
+                            specB = IndiceB;
+                            break;
+                        }
+                        else if((255 * ddpRef[IndiceB][2]) <= Color.blue(pixelsCurrent[x][y])) IndiceMinB = IndiceB;
+                        else IndiceMaxB = IndiceB;
+                    }
+                    else return;
+                }
+
+                toPixelRGB(x, y, specR, specG, specB);
+
             }
         }
 
