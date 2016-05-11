@@ -1023,7 +1023,7 @@ public class Main extends Activity {
     public void btSaveClick() {
         Calendar c = Calendar.getInstance();
         String fileName = "otTER_"+c.get(Calendar.YEAR)+"-"+c.get(Calendar.MONTH)+"-"+c.get(Calendar.DAY_OF_MONTH)
-                          +"-"+c.get(Calendar.HOUR_OF_DAY)+"-"+c.get(Calendar.MINUTE)+"-"+c.get(Calendar.SECOND)+".png";
+                          +"_"+c.get(Calendar.HOUR_OF_DAY)+"-"+c.get(Calendar.MINUTE)+"-"+c.get(Calendar.SECOND)+".png";
         String filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + fileName;
         // L'image sera enregistrée au format PNG dans le dossier de sauvegarde d'images par défaut de l'appareil Android,
         // avec le nom otTER_YYYY_MM_DD_hh_mm_ss.png adapté au moment de la sauvegarde.
