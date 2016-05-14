@@ -2375,7 +2375,7 @@ public class Main extends Activity {
                         for (int j = y - 1; j < y + 2; j++) {
                             if (i != -1 && i != imageWidth && j != -1 && j != imageHeight) {
                                 // On cherche le minimum de la somme des 3 composantes parmi les 8 voisins d'un pixel et lui-même
-                                sum = Color.red(pixelsOld[i][j]) + Color.green(pixelsOld[i][j]) + Color.blue(pixelsOld[i][j]);
+                                sum = getPixelsOldColor(i,j,0) + getPixelsOldColor(i,j,1) + getPixelsOldColor(i,j,2);
                                 if (sum < min) {
                                     min = sum;
                                     indx = i;
@@ -2383,7 +2383,7 @@ public class Main extends Activity {
                                 }
                             }
                         }
-                    toPixelRGB(x, y, Color.red(pixelsOld[indx][indy]), Color.green(pixelsOld[indx][indy]), Color.blue(pixelsOld[indx][indy]));
+                    toPixelRGB(x, y, getPixelsOldColor(indx, indy, 0), getPixelsOldColor(indx, indy, 1), getPixelsOldColor(indx,indy,2));
                 }
                 else return;
             }
@@ -2407,7 +2407,7 @@ public class Main extends Activity {
                         for (int j = y - 1; j < y + 2; j++) {
                             if (i != -1 && i != imageWidth && j != -1 && j != imageHeight) {
                                 // On cherche le maximum de la somme des 3 composantes parmi les 8 voisins d'un pixel et lui-même
-                                sum = Color.red(pixelsOld[i][j]) + Color.green(pixelsOld[i][j]) + Color.blue(pixelsOld[i][j]);
+                                sum = getPixelsOldColor(i,j,0) + getPixelsOldColor(i,j,1) + getPixelsOldColor(i,j,2);
                                 if (sum > max) {
                                     max = sum;
                                     indx = i;
@@ -2415,7 +2415,7 @@ public class Main extends Activity {
                                 }
                             }
                         }
-                    toPixelRGB(x, y, Color.red(pixelsOld[indx][indy]), Color.green(pixelsOld[indx][indy]), Color.blue(pixelsOld[indx][indy]));
+                    toPixelRGB(x, y, getPixelsOldColor(indx, indy, 0), getPixelsOldColor(indx, indy, 1), getPixelsOldColor(indx,indy,2));
                 }
                 else return;
             }
@@ -2448,9 +2448,9 @@ public class Main extends Activity {
                     // On calcule les sommes affectées des coefficients
                     for (int i = x - 2; i < x + 3; i++)
                         for (int j = y - 2; j < y + 3; j++) {
-                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,0);
+                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,1);
+                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,2);
                         }
 
                     // On normalise, en s'assurant de ne pas sortir des bornes (possible s'il y a des coefficients négatifs)
@@ -2505,9 +2505,9 @@ public class Main extends Activity {
                     // On applique la grille.
                     for (int i = x - 2; i < x + 3; i++)
                         for (int j = y - 2; j < y + 3; j++) {
-                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,0);
+                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,1);
+                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,2);
                         }
 
                     toPixelRGB(x, y, sum_r / paramMatrixNorme, sum_g / paramMatrixNorme, sum_b / paramMatrixNorme);
@@ -2549,9 +2549,9 @@ public class Main extends Activity {
                     // On applique la grille.
                     for (int i = x - 2; i < x + 3; i++)
                         for (int j = y - 2; j < y + 3; j++) {
-                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,0);
+                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,1);
+                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,2);
                         }
 
                     toPixelRGB(x, y, sum_r / paramMatrixNorme, sum_g / paramMatrixNorme, sum_b / paramMatrixNorme);
@@ -2596,9 +2596,9 @@ public class Main extends Activity {
                     // On applique la grille.
                     for (int i = x - 2; i < x + 3; i++)
                         for (int j = y - 2; j < y + 3; j++) {
-                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * Color.red(pixelsOld[i][j]);
-                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * Color.green(pixelsOld[i][j]);
-                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * Color.blue(pixelsOld[i][j]);
+                            sum_r += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,0);
+                            sum_g += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,1);
+                            sum_b += paramMatrixValue[i - x + 2][j - y + 2] * getPixelsOldColor(i,j,2);
                         }
                     toPixelRGB(x, y, sum_r / paramMatrixNorme, sum_g / paramMatrixNorme, sum_b / paramMatrixNorme);
                 }
@@ -2711,7 +2711,7 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
                 if (!applyTask.isCancelled()) {
-                    toPixelRGB(x, y, Color.red(pixelsOld[imageWidth - 1 - x][y]), Color.green(pixelsOld[imageWidth - 1 - x][y]), Color.blue(pixelsOld[imageWidth - 1 - x][y]));
+                    toPixelRGB(x, y, getPixelsOldColor(imageWidth - 1 - x, y, 0), getPixelsOldColor(imageWidth - 1 - x, y, 1), getPixelsOldColor(imageWidth - 1 - x,y,2));
                 }
                 else return;
     }
