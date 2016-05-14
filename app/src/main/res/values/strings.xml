@@ -1,8 +1,11 @@
 <resources>
+    <!-- Général -->
     <string name="app_name">otTER</string>
     <string name="welcome">Bienvenue !</string>
     <string name="choice">Choix : %1$s</string>
+    <string name="settings">Paramètres</string>
 
+    <!-- Messages de dialogue -->
     <string name="exitTitle">Quitter ?</string>
     <string name="exitMessage">Êtes-vous sûr de vouloir quitter l\'application ?</string>
     <string name="exitYes">Oui</string>
@@ -10,6 +13,7 @@
     <string name="dialogOK">OK</string>
     <string name="dialogCancel">Annuler</string>
 
+    <!-- Messages liés au chargement -->
     <string name="loading">Chargement en cours…</string>
     <string name="loadSuccess">Chargement de l\'image effectué.</string>
     <string name="loadCancelled">Chargement de l\'image annulé.</string>
@@ -19,6 +23,7 @@
     <string name="camCancelled">Prise de photo annulée.</string>
     <string name="camError">Erreur durant la prise de photo.</string>
 
+    <!-- Messages liés à la sauvegarde -->
     <string name="saveIntDirError">Erreur durant la création du dossier.</string>
     <string name="saveIntFileError">Erreur durant la création du fichier.</string>
     <string name="saveExtDirError">Erreur durant la création du dossier.</string>
@@ -28,54 +33,61 @@
     <string name="saveSuccess">Sauvegarde effectuée.</string>
     <string name="saveDesc">Sauvegardé avec otTER.</string>
 
+    <!-- Messages liés aux sliders -->
     <string name="valueChangeTitle">Changer la valeur du paramètre</string>
-
     <string name="valueBarWarning">La valeur doit être choisie entre 0 et %1$d</string>
     <string name="valueBarError">Erreur : la valeur doit être choisie entre 0 et %1$d</string>
     <string name="valueBarSuccess">Valeur du paramètre modifiée.</string>
 
+    <!-- Messages liés à la matrice 5x5 -->
     <string name="valueMatrixWarning">Intervalle de valeurs : [-99;99]</string>
     <string name="valueMatrixBoundsError">Erreur : la valeur en colonne %1$d et ligne %2$d est hors-limite.</string>
     <string name="valueMatrixNormError">Erreur : la norme de la grille vaut 0.</string>
     <string name="valueMatrixSuccess">Valeurs de la grille modifiées.</string>
 
-    <string name="imageEmpty">Pas d\'image.</string>
-    <string name="imageReferenceEmpty">Pas d\'image de référence.</string>
-
     <string name="matrixConvolutionText">Editer la matrice de convolution.</string>
     <string name="matrixConvolutionTitle">Matrice de convolution</string>
 
+    <!-- Messages liés à l'image de référence -->
+    <string name="imageEmpty">Pas d\'image.</string>
+    <string name="imageReferenceEmpty">Pas d\'image de référence.</string>
+
+    <!-- Messages liés au traitement -->
     <string name="emptyProcess">Pas de traitement sélectionné.</string>
     <string name="applyingProcess">%1$s en cours…</string>
     <string name="cancelledProcess">Traitement annulé.</string>
 
+    <!-- Noms de catégories de traitements -->
     <string name="processCategoryChooserTitle">Choix de traitement</string>
     <string name="processCategoryHistogram">Histogramme</string>
     <string name="processCategoryMorphology">Morphologie</string>
     <string name="processCategoryFilter">Filtre</string>
     <string name="processCategoryCosmetic">Cosmétique</string>
 
+    <!-- Noms de traitements de modification d'histogramme -->
     <string name="processHistogramChooserTitle">Modification d\'histogramme</string>
     <string name="processHistogramSeuil">Seuil</string>
     <string name="processHistogramSpecification">Spécification</string>
     <string name="processHistogramEgalisation">Egalisation</string>
     <string name="processHistogramExpansion">Expansion</string>
 
+    <!-- Noms de traitements de morphologie -->
     <string name="processMorphologyChooserTitle">Morphologie</string>
     <string name="processMorphologyDilatation">Dilatation</string>
     <string name="processMorphologyErosion">Erosion</string>
 
+    <!-- Noms de traitements de filtres -->
     <string name="processFilterChooserTitle">Filtre</string>
     <string name="processFilterConvolution">Convolution</string>
     <string name="processFilterMoyenneur">Moyenneur</string>
     <string name="processFilterGaussien">Gaussien</string>
     <string name="processFilterKirsch">Détection de contours (Kirsch)</string>
 
+    <!-- Noms de traitements cosmétiques -->
     <string name="processCosmeticChooserTitle">Cosmétique</string>
     <string name="processCosmeticGrey">Niveaux de gris</string>
     <string name="processCosmeticSepia">Sépia</string>
     <string name="processCosmeticNegative">Négatif</string>
     <string name="processCosmeticMirror">Miroir</string>
 
-    <string name="settings">Paramètres</string>
 </resources>
