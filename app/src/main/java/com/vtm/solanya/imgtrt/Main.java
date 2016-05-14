@@ -2019,9 +2019,9 @@ public class Main extends Activity {
                 if (!applyTask.isCancelled()) {
                     // On lit les 3 couleurs en [0..255]
 
-                    red = Color.red(pixelsOld[x][y]);
-                    green = Color.green(pixelsOld[x][y]);
-                    blue = Color.blue(pixelsOld[x][y]);
+                    red = getPixelsOldColor(x,y,0);
+                    green = getPixelsOldColor(x,y,1);
+                    blue = getPixelsOldColor(x,y,2);
 
                     // On applique le seuil.
 
@@ -2071,18 +2071,18 @@ public class Main extends Activity {
         for(int x = 0 ; x < imageWidth ; x++)
             for(int y = 0 ; y < imageHeight ; y++)
             {
-                ddpImg[Color.red(pixelsOld[x][y])][0]++;
-                ddpImg[Color.green(pixelsOld[x][y])][1]++;
-                ddpImg[Color.blue(pixelsOld[x][y])][2]++;
+                ddpImg[getPixelsOldColor(x,y,0)][0]++;
+                ddpImg[getPixelsOldColor(x,y,1)][1]++;
+                ddpImg[getPixelsOldColor(x,y,2)][2]++;
             }
 
         // On lit la densité de probabilité de l'image de référence
         for(int x = 0 ; x < referenceWidth ; x++)
             for(int y = 0 ; y < referenceHeight ; y++)
             {
-                ddpRef[Color.red(pixelsReference[x][y])][0]++;
-                ddpRef[Color.green(pixelsReference[x][y])][1]++;
-                ddpRef[Color.blue(pixelsReference[x][y])][2]++;
+                ddpRef[getPixelsReferenceColor(x,y,0)][0]++;
+                ddpRef[getPixelsReferenceColor(x,y,1)][1]++;
+                ddpRef[getPixelsReferenceColor(x,y,2)][2]++;
             }
 
         for(int j = 0 ; j < 3 ; j++) {
@@ -2102,9 +2102,9 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++) {
             for (int y = 0; y < imageHeight; y++) {
 
-                specR = (int)(ddpImg[Color.red(pixelsOld[x][y])][0] * 255);
-                specG = (int)(ddpImg[Color.green(pixelsOld[x][y])][1] * 255);
-                specB = (int)(ddpImg[Color.blue(pixelsOld[x][y])][2] * 255);
+                specR = (int)(ddpImg[getPixelsOldColor(x,y,0)][0] * 255);
+                specG = (int)(ddpImg[getPixelsOldColor(x,y,1)][1] * 255);
+                specB = (int)(ddpImg[getPixelsOldColor(x,y,2)][2] * 255);
                 toPixelRGB_NoProgress(x, y, specR, specG, specB);
             }
         }
@@ -2125,10 +2125,10 @@ public class Main extends Activity {
                 while (true) {
                     if (!applyTask.isCancelled()) {
                         IndiceR = IndiceMinR + (IndiceMaxR - IndiceMinR + 1) / 2;
-                        if ((((255 * ddpRef[IndiceR][0]) >= Color.red(pixelsCurrent[x][y])) && ((255 * ddpRef[IndiceR - 1][0]) <= Color.red(pixelsCurrent[x][y]))) || (IndiceR == 255 || IndiceR == 1)) {
+                        if ((((255 * ddpRef[IndiceR][0]) >= getPixelsCurrentColor(x,y,0)) && ((255 * ddpRef[IndiceR - 1][0]) <= getPixelsCurrentColor(x,y,0))) || (IndiceR == 255 || IndiceR == 1)) {
                             specR = IndiceR;
                             break;
-                        } else if ((255 * ddpRef[IndiceR][0]) < Color.red(pixelsCurrent[x][y]))
+                        } else if ((255 * ddpRef[IndiceR][0]) < getPixelsCurrentColor(x,y,0))
                             IndiceMinR = IndiceR;
                         else IndiceMaxR = IndiceR;
                     }
@@ -2142,10 +2142,10 @@ public class Main extends Activity {
                 while (true) {
                     if (!applyTask.isCancelled()) {
                         IndiceG = IndiceMinG + (IndiceMaxG - IndiceMinG + 1) / 2;
-                        if ((((255 * ddpRef[IndiceG][1]) >= Color.green(pixelsCurrent[x][y])) && ((255 * ddpRef[IndiceG - 1][1]) <= Color.green(pixelsCurrent[x][y]))) || (IndiceG == 255 || IndiceG == 1)) {
+                        if ((((255 * ddpRef[IndiceG][1]) >= getPixelsCurrentColor(x,y,1)) && ((255 * ddpRef[IndiceG - 1][1]) <= getPixelsCurrentColor(x,y,1))) || (IndiceG == 255 || IndiceG == 1)) {
                             specG = IndiceG;
                             break;
-                        } else if ((255 * ddpRef[IndiceG][1]) < Color.green(pixelsCurrent[x][y]))
+                        } else if ((255 * ddpRef[IndiceG][1]) < getPixelsCurrentColor(x,y,1))
                             IndiceMinG = IndiceG;
                         else IndiceMaxG = IndiceG;
                     }
@@ -2159,11 +2159,11 @@ public class Main extends Activity {
                 while (true){
                     if (!applyTask.isCancelled()) {
                         IndiceB = IndiceMinB + (IndiceMaxB - IndiceMinB + 1) / 2;
-                        if ((((255 * ddpRef[IndiceB][2]) >= Color.blue(pixelsCurrent[x][y])) && ((255 * ddpRef[IndiceB -1 ][2]) <= Color.blue(pixelsCurrent[x][y]))) || (IndiceB == 255 || IndiceB == 1)) {
+                        if ((((255 * ddpRef[IndiceB][2]) >= getPixelsCurrentColor(x,y,2)) && ((255 * ddpRef[IndiceB -1 ][2]) <= getPixelsCurrentColor(x,y,2))) || (IndiceB == 255 || IndiceB == 1)) {
                             specB = IndiceB;
                             break;
                         }
-                        else if((255 * ddpRef[IndiceB][2]) < Color.blue(pixelsCurrent[x][y])) IndiceMinB = IndiceB;
+                        else if((255 * ddpRef[IndiceB][2]) < getPixelsCurrentColor(x,y,2)) IndiceMinB = IndiceB;
                         else IndiceMaxB = IndiceB;
                     }
                     else return;
@@ -2190,9 +2190,9 @@ public class Main extends Activity {
         for (int x = 0 ; x < imageWidth ; x++)
             for (int y = 0 ; y < imageHeight ; y++)
             {
-                ddp[Color.red(pixelsOld[x][y])][0]++;
-                ddp[Color.green(pixelsOld[x][y])][1]++;
-                ddp[Color.blue(pixelsOld[x][y])][2]++;
+                ddp[getPixelsOldColor(x,y,0)][0]++;
+                ddp[getPixelsOldColor(x,y,1)][1]++;
+                ddp[getPixelsOldColor(x,y,2)][2]++;
             }
 
         for (int j = 0 ; j < 3 ; j++)
@@ -2210,9 +2210,9 @@ public class Main extends Activity {
             for(int y = 0 ; y < imageHeight ; y++)
             {
                 if (!applyTask.isCancelled()) {
-                    egalR = (int) (255 * ddp[Color.red(pixelsOld[x][y])][0]);
-                    egalG = (int) (255 * ddp[Color.green(pixelsOld[x][y])][1]);
-                    egalB = (int) (255 * ddp[Color.blue(pixelsOld[x][y])][2]);
+                    egalR = (int) (255 * ddp[getPixelsOldColor(x,y,0)][0]);
+                    egalG = (int) (255 * ddp[getPixelsOldColor(x,y,1)][1]);
+                    egalB = (int) (255 * ddp[getPixelsOldColor(x,y,2)][2]);
                     toPixelRGB(x, y, egalR, egalG, egalB);
                 }
                 else return;
@@ -2244,9 +2244,9 @@ public class Main extends Activity {
         for(int x = 0;x < imageWidth;x++)
             for(int y = 0;y < imageHeight;y++)
             {
-                hist[Color.red(pixelsOld[x][y])][0]++;
-                hist[Color.green(pixelsOld[x][y])][1]++;
-                hist[Color.blue(pixelsOld[x][y])][2]++;
+                hist[getPixelsOldColor(x,y,0)][0]++;
+                hist[getPixelsOldColor(x,y,1)][1]++;
+                hist[getPixelsOldColor(x,y,2)][2]++;
             }
 
         // On effectue le coupage sur chacune des composantes
@@ -2321,20 +2321,20 @@ public class Main extends Activity {
             for(int y = 0;y < imageHeight;y++)
             {
                 if (!applyTask.isCancelled()) {
-                    if (Color.red(pixelsCurrent[x][y]) < min_r)
-                        toPixelRGB_NoProgress(x, y, min_r, Color.green(pixelsCurrent[x][y]), Color.blue(pixelsCurrent[x][y]));
-                    if (Color.red(pixelsCurrent[x][y]) > max_r)
-                        toPixelRGB_NoProgress(x, y, max_r, Color.green(pixelsCurrent[x][y]), Color.blue(pixelsCurrent[x][y]));
+                    if (getPixelsCurrentColor(x,y,0) < min_r)
+                        toPixelRGB_NoProgress(x, y, min_r, getPixelsCurrentColor(x,y,1), getPixelsCurrentColor(x,y,2));
+                    if (getPixelsCurrentColor(x,y,0) > max_r)
+                        toPixelRGB_NoProgress(x, y, max_r, getPixelsCurrentColor(x,y,1), getPixelsCurrentColor(x,y,2));
 
-                    if (Color.green(pixelsCurrent[x][y]) < min_g)
-                        toPixelRGB_NoProgress(x, y, Color.red(pixelsCurrent[x][y]), min_g, Color.blue(pixelsCurrent[x][y]));
-                    if (Color.green(pixelsCurrent[x][y]) > max_g)
-                        toPixelRGB_NoProgress(x, y, Color.red(pixelsCurrent[x][y]), max_g, Color.blue(pixelsCurrent[x][y]));
+                    if (getPixelsCurrentColor(x,y,1) < min_g)
+                        toPixelRGB_NoProgress(x, y, getPixelsCurrentColor(x,y,0), min_g, getPixelsCurrentColor(x,y,2));
+                    if (getPixelsCurrentColor(x,y,1) > max_g)
+                        toPixelRGB_NoProgress(x, y, getPixelsCurrentColor(x,y,0), max_g, getPixelsCurrentColor(x,y,2));
 
-                    if (Color.blue(pixelsCurrent[x][y]) < min_b)
-                        toPixelRGB_NoProgress(x, y, Color.red(pixelsCurrent[x][y]), Color.green(pixelsCurrent[x][y]), min_b);
-                    if (Color.blue(pixelsCurrent[x][y]) > max_b)
-                        toPixelRGB_NoProgress(x, y, Color.red(pixelsCurrent[x][y]), Color.green(pixelsCurrent[x][y]), max_b);
+                    if (getPixelsCurrentColor(x,y,2) < min_b)
+                        toPixelRGB_NoProgress(x, y, getPixelsCurrentColor(x,y,0), getPixelsCurrentColor(x,y,1), min_b);
+                    if (getPixelsCurrentColor(x,y,2) > max_b)
+                        toPixelRGB_NoProgress(x, y, getPixelsCurrentColor(x,y,0), getPixelsCurrentColor(x,y,1), max_b);
 
                     progressUpdate();
                 }
@@ -2352,7 +2352,7 @@ public class Main extends Activity {
 
         for(int x = 0;x < imageWidth;x++)
             for(int y = 0;y < imageHeight;y++)
-                toPixelRGB(x, y, (int)(Color.red(pixelsCurrent[x][y]) * betaR + alphaR), (int)(Color.green(pixelsCurrent[x][y]) * betaG + alphaG), (int)(Color.blue(pixelsCurrent[x][y]) * betaB + alphaB));
+                toPixelRGB(x, y, (int)(getPixelsCurrentColor(x,y,0) * betaR + alphaR), (int)(getPixelsCurrentColor(x,y,1) * betaG + alphaG), (int)(getPixelsCurrentColor(x,y,2) * betaB + alphaB));
 
 
     }
@@ -2665,7 +2665,7 @@ public class Main extends Activity {
             for (int y = 0; y < imageHeight; y++)
             {
                 if (!applyTask.isCancelled()) {
-                    val = (int) ((float) Color.red(pixelsOld[x][y]) * 0.2989 + (float) Color.green(pixelsOld[x][y]) * 0.587 + (float) Color.blue(pixelsOld[x][y]) * 0.114);
+                    val = (int) ((float) getPixelsOldColor(x,y,0) * 0.2989 + (float) getPixelsOldColor(x,y,1) * 0.587 + (float) getPixelsOldColor(x,y,2) * 0.114);
                     toPixelRGB(x, y, val, val, val);
                 }
                 else return;
@@ -2682,9 +2682,9 @@ public class Main extends Activity {
             for (int y = 0; y < imageHeight; y++)
             {
                 if (!applyTask.isCancelled()) {
-                    red = (int) ((float) Color.red(pixelsOld[x][y]) * 0.393 + (float) Color.green(pixelsOld[x][y]) * 0.769 + (float) Color.blue(pixelsOld[x][y]) * 0.189);
-                    green = (int) ((float) Color.red(pixelsOld[x][y]) * 0.349 + (float) Color.green(pixelsOld[x][y]) * 0.686 + (float) Color.blue(pixelsOld[x][y]) * 0.168);
-                    blue = (int) ((float) Color.red(pixelsOld[x][y]) * 0.272 + (float) Color.green(pixelsOld[x][y]) * 0.534 + (float) Color.blue(pixelsOld[x][y]) * 0.131);
+                    red = (int) ((float) getPixelsOldColor(x,y,0) * 0.393 + (float) getPixelsOldColor(x,y,1) * 0.769 + (float) getPixelsOldColor(x,y,2) * 0.189);
+                    green = (int) ((float) getPixelsOldColor(x,y,0) * 0.349 + (float) getPixelsOldColor(x,y,1) * 0.686 + (float) getPixelsOldColor(x,y,2) * 0.168);
+                    blue = (int) ((float) getPixelsOldColor(x,y,0) * 0.272 + (float) getPixelsOldColor(x,y,1) * 0.534 + (float) getPixelsOldColor(x,y,2) * 0.131);
 
                     toPixelRGB(x, y, (red > 255 ? 255 : red), (green > 255 ? 255 : green), (blue > 255 ? 255 : blue));
                 }
@@ -2699,7 +2699,7 @@ public class Main extends Activity {
         for (int x = 0; x < imageWidth; x++)
             for (int y = 0; y < imageHeight; y++)
                 if (!applyTask.isCancelled()) {
-                    toPixelRGB(x, y, 255 - Color.red(pixelsOld[x][y]), 255 - Color.green(pixelsOld[x][y]), 255 - Color.blue(pixelsOld[x][y]));
+                    toPixelRGB(x, y, 255 - getPixelsOldColor(x,y,0), 255 - getPixelsOldColor(x,y,1), 255 - getPixelsOldColor(x,y,2));
                 }
                 else return;
     }
