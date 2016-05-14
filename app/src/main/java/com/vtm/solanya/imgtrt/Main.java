@@ -1783,6 +1783,29 @@ public class Main extends Activity {
 
     /**
      * Fonction renvoyant la valeur sur [0..255] du pixel en position (x,y) du
+     * tableau pixelsOld correspondant à l'image d'origine.
+     * @param x Indice en largeur du pixel considéré
+     * @param y Indice en hauteur du pixel considéré
+     * @param color Indice correspondant à la composante de couleur désirée (0 : Rouge, 1 : Vert, 2 : Bleu)
+     * @return Valeur entre 0 et 255
+     */
+    int getPixelsOldColor(int x, int y, int color)
+    {
+        switch(color)
+        {
+            case 0 :
+                return Color.red(pixelsOld[x][y]);
+            case 1 :
+                return Color.green(pixelsOld[x][y]);
+            case 2 :
+                return Color.blue(pixelsOld[x][y]);
+            default :
+                return 0;
+        }
+    }
+
+    /**
+     * Fonction renvoyant la valeur sur [0..255] du pixel en position (x,y) du
      * tableau pixelsCurrent correspondant à l'image en cours de traitement.
      * @param x Indice en largeur du pixel considéré
      * @param y Indice en hauteur du pixel considéré
@@ -1799,6 +1822,29 @@ public class Main extends Activity {
                 return Color.green(pixelsCurrent[x][y]);
             case 2 :
                 return Color.blue(pixelsCurrent[x][y]);
+            default :
+                return 0;
+        }
+    }
+
+    /**
+     * Fonction renvoyant la valeur sur [0..255] du pixel en position (x,y) du
+     * tableau pixelsReference correspondant à l'image de référence.
+     * @param x Indice en largeur du pixel considéré
+     * @param y Indice en hauteur du pixel considéré
+     * @param color Indice correspondant à la composante de couleur désirée (0 : Rouge, 1 : Vert, 2 : Bleu)
+     * @return Valeur entre 0 et 255
+     */
+    int getPixelsReferenceColor(int x, int y, int color)
+    {
+        switch(color)
+        {
+            case 0 :
+                return Color.red(pixelsReference[x][y]);
+            case 1 :
+                return Color.green(pixelsReference[x][y]);
+            case 2 :
+                return Color.blue(pixelsReference[x][y]);
             default :
                 return 0;
         }
@@ -2669,7 +2715,6 @@ public class Main extends Activity {
                 }
                 else return;
     }
-
 }
 
 
